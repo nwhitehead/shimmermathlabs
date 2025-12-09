@@ -18,3 +18,4 @@ NVIDIA® trying to make deep learning inference go faster. Nathan’s interests
 include math, AI, performance optimization, audio algorithms, typesetting, and
 building software. They live in Tacoma, Washington.
 
+<img width="200px" src="/ragfit.jpg" alt='Nathan wearing gray white striped socks, black leggings, gray dress, rag + bone cardigan, with hair up in a bun.' />
