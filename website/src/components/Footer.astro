@@ -41,6 +41,9 @@ const today = new Date();
             </svg>
         </a>
 	</div>
+    <p>
+        Made with <span class="special">💖+🧠+☕</span>
+    </p>
 </footer>
 <style>
 	footer {
@@ -62,4 +65,13 @@ const today = new Date();
 	.social-links a:hover {
 		color: rgb(var(--gray-dark));
 	}
+    .special {
+        transition-property: all;
+        transition-duration: 200ms;
+        filter: grayscale(100%);
+    }
+    .special:hover {
+        filter: grayscale(0%);
+        cursor: default;
+    }
 </style>
