@@ -1,13 +1,14 @@
 ---
 import { SITE_TITLE } from '../consts';
 import HeaderLink from './HeaderLink.astro';
+import HeaderLogo from './HeaderLogo.astro';
 import LogoImage from '../assets/logo_pathed.svg';
 import { Image } from 'astro:assets';
 ---
 
 <header>
 	<nav>
-		<h2><a href="/"><Image src={LogoImage} alt="Shimmer Math Labs"/></a></h2>
+		<h2><HeaderLogo href="/"><Image src={LogoImage} alt="Shimmer Math Labs"/></HeaderLogo></h2>
 		<div class="internal-links">
 			<HeaderLink href="/">Home</HeaderLink>
 			<HeaderLink href="/blog">Blog</HeaderLink>
