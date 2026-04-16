@@ -6,6 +6,7 @@ const SCREEN_H = 720;
 
 const SEED = 1234;
 const NUM_PETALS = 100;
+const CURTAIN_SPEED = 0.5;
 
 const prng = MRG32k3a(SEED);
 
@@ -21,6 +22,9 @@ function newImage(src) {
 
 let renderState = {
     time: 0,
+    curtain: 1,
+    curtainGoal: 0,
+    lastTime: 0,
     petal: newImage('petal.png'),
     transition: newImage('transition.png'),
     text: [],
@@ -171,6 +175,7 @@ function draw() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "#000";
     const t = renderState.time;
+    // Draw petals and update
     for (let p of renderState.petals) {
         drawRotScale(ctx, renderState.petal, p.r, p.s, p.x, p.y);
         p.x += p.vx;
@@ -182,6 +187,7 @@ function draw() {
             p.vx = uniform(-2, 2);
         }
     }
+    // Draw text
     for (const evt of events) {
         if (t > evt.t && t <= evt.t + evt.keep + FADEOUT_TIME) {
             ctx.save();
@@ -217,9 +223,24 @@ function draw() {
             ctx.restore();
         }
     }
+    // Show abyss
+    ctx.save();
+    ctx.globalCompositeOperation = 'difference';
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, SCREEN_H * renderState.curtain, SCREEN_W, SCREEN_H);
+    ctx.restore();
+    // Update curtain
+    const deltaT = renderState.time - renderState.lastTime;
+    if (deltaT > 0) {
+        let deltaCurtain = (renderState.curtainGoal - renderState.curtain) * 0.05;
+        if (Math.abs(deltaCurtain) > Math.abs(CURTAIN_SPEED * deltaT)) {
+            deltaCurtain = Math.sign(deltaCurtain) * CURTAIN_SPEED * deltaT;
+        }
+        renderState.curtain += deltaCurtain;
+    }
+    renderState.lastTime = renderState.time;
 }
 
-document.addEventListener("DOMContentLoaded", async (event) => {
+document.addEventListener("DOMContentLoaded", async () => {
     main(init, draw);
 });
-
