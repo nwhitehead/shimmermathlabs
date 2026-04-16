@@ -3,7 +3,9 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
-<title>Radiant Abyss</title>
+    <link href='https://fonts.googleapis.com/css?family=Lato:100' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Lato:100italic' rel='stylesheet' type='text/css'>
+    <title>Radiant Abyss</title>
 <style>
 body {
     margin: 0;
@@ -29,6 +31,21 @@ body {
     aspect-ratio: 16 / 9;
     background-color: #000;
 }
+@keyframes fadein {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes fadeout {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+.fadein-text {
+    animation: fadein 1.0s forwards;
+}
+.fadeout-text {
+    animation: fadeout 1.0s forwards;
+}
+
 </style>
 </head>
 <body>
