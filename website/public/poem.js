@@ -234,7 +234,7 @@ function draw() {
                 sumH += ascent;
             }
             let x = SCREEN_W / 2 + evt.pos[0] - maxW / 2;
-            let y = SCREEN_H / 2 + evt.pos[1] - sumH / 2;
+            let y = SCREEN_H / 2 + evt.pos[1];
             for (let idx = 0; idx < lines.length; idx++) {
                 const line = lines[idx];
                 let center_dx = (maxW - measures[idx].width) / 2;
@@ -250,7 +250,14 @@ function draw() {
     ctx.save();
     ctx.globalCompositeOperation = 'difference';
     ctx.fillStyle = '#fff';
-    ctx.fillRect(0, SCREEN_H * renderState.curtain, SCREEN_W, SCREEN_H);
+    let region = new Path2D();
+    region.moveTo(0, SCREEN_H);
+    region.lineTo(SCREEN_W, SCREEN_H * renderState.curtain);
+    region.lineTo(SCREEN_W, SCREEN_H);
+    region.closePath();
+    ctx.fill(region);
+
+    //ctx.fillRect(0, SCREEN_H * renderState.curtain, SCREEN_W, SCREEN_H);
     ctx.restore();
     // Update curtain
     const deltaT = renderState.time - renderState.lastTime;
