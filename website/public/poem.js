@@ -13,21 +13,58 @@ function uniform(low, high) {
     return prng() * (high - low) + low;
 }
 
+function newImage(src) {
+    let result = new Image();
+    result.src = src;
+    return result;
+}
+
 let renderState = {
     time: 0,
-    petal: new Image(),
+    petal: newImage('petal.png'),
+    transition: newImage('transition.png'),
     text: [],
 };
 
 const fonts = [
     '72px Lato',
 ];
+const d = 1;
+const dd = 2;
 
 const msgs = [
-    1.0,
-    'Come inside', 1.0,
-    1.0,
-    'this blizzard\nof falling apple blossoms', 2.0,
+    // d, 
+    // 'Come inside', d,
+    // d,
+    // 'this blizzard\nof falling apple blossoms', dd,
+    // dd,
+    // "It's light in here.", dd,
+    // d,
+    // "Let me look at you.", dd,
+    // dd,
+    // "Surrounded by all of\nthis brightness", dd,
+    // d,
+    // "flying apart, shining", dd,
+    // d,
+    // "dismantled to make room\nfor more shining.", dd,
+    // dd,
+    // "one of us should say something", dd,
+    // d,
+    // "Or we should both say something,", dd,
+    // { pos: [0, 40] }, "something true", dd,
+    // d,
+    // "before we were born, true", dd,
+    // d,
+    // "while we lived and true", dd,
+    // d,
+    // "after we're gone.", dd,
+    // dd,
+    "Nowhere long,\nthese petals fall", dd,
+    d,
+    "out of one realm", dd,
+    d,
+    "and into another,\nstate after state.", dd,
+    dd,
 ];
 
 function compile(msgs) {
@@ -51,7 +88,7 @@ function compile(msgs) {
             });
             pos = [0, 0];
         } else {
-            throw new Error('Unknown message type');
+            if (msg.pos) pos = msg.pos;
         }
     }
     return result;
@@ -109,7 +146,6 @@ function randomPetal() {
 }
 
 function init() {
-    renderState.petal.src = 'petal.png';
     renderState.petals = [];
     for (let i = 0; i < NUM_PETALS; i++) {
         renderState.petals.push(randomPetal());
