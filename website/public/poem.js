@@ -66,8 +66,16 @@ function init() {
 }
 
 const BASE_PV = 0.001;
-const SCALE_PV = 5.0;
+const SCALE_PV = 5000.0;
 const SCALE_T = 0.1;
+
+function flow(x, y, z) {
+    const eps = 1e-4;
+    const v0 = perlin3(x, y, z);
+    const vy = perlin3(x + eps, y, z) - v0;
+    const vx = -(perlin3(x, y + eps, z) - v0);
+    return { vx, vy };
+}
 
 function draw() {
     renderState.time = (Date.now() - renderState.startTime) * 0.001;
@@ -85,7 +93,9 @@ function draw() {
             Object.assign(p, randomPetal());
             p.y = 0;
         }
-        p.vx = SCALE_PV * perlin3(p.x * BASE_PV, p.y * BASE_PV, SCALE_T * t);
+        const f = flow(p.x * BASE_PV, p.y * BASE_PV, SCALE_T * t);
+        p.vx = 10 * SCALE_PV * f.vx;
+        p.vy = SCALE_PV * f.vy + 2;
     }
 }
 
