@@ -24,8 +24,8 @@ const fonts = [
 ];
 
 const events = [
-    { t: 2.0, msg: "Come inside", font: 0, pos: [500, 400], keep: 2.0 },
-    { t: 5.0, msg: "this blizzard of falling apple blossoms", font: 0, pos: [500, 600], keep: 2.0 },
+    { t: 2.0, msg: "Come inside", font: 0, pos: [0, 400], keep: 2.0 },
+    { t: 5.0, msg: "this blizzard of falling apple blossoms", font: 0, pos: [0, 600], keep: 2.0 },
 ];
 
 const TIME_SCALE = 2.0;
@@ -112,13 +112,14 @@ function draw() {
             p.vx = uniform(-2, 2);
         }
     }
+    ctx.font = "72px Lato";
+    ctx.fillText("Begin", 200, 100);
 }
 
 function handleEvent(evt) {
-    console.log('Handling', evt);
     const elem = document.createElement('div');
     elem.innerText = evt.msg;
-    elem.style.position = 'fixed';
+    elem.style.position = 'relative';
     const f = fonts[evt.font];
     elem.style.fontFamily = f.fontFamily;
     elem.style.fontSize = `${f.fontSize}px`;
