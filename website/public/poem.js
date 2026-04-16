@@ -20,15 +20,49 @@ let renderState = {
 };
 
 const fonts = [
-    { fontFamily: "Lato", fontSize: 72 },
+    '72px Lato',
 ];
 
-const events = [
-    { t: 2.0, msg: "Come inside", font: 0, pos: [0, 400], keep: 2.0 },
-    { t: 5.0, msg: "this blizzard of falling apple blossoms", font: 0, pos: [0, 600], keep: 2.0 },
+const msgs = [
+    1.0,
+    'Come inside', 1.0,
+    1.0,
+    'this blizzard\nof falling apple blossoms', 2.0,
 ];
+
+function compile(msgs) {
+    let result = [];
+    let t = 0.0;
+    let font = 0;
+    let align = 'center';
+    let pos = [0, 0];
+    for (const msg of msgs) {
+        if (typeof msg === 'number') {
+            t += msg;
+            // add to keep value of last message text
+            if (result.length > 0) {
+                if (result[result.length - 1].keep == 0) {
+                    result[result.length - 1].keep = msg;
+                }
+            }
+        } else if (typeof msg === 'string') {
+            result.push({
+                t, msg, font, pos, align, pos, keep: 0,
+            });
+            pos = [0, 0];
+        } else {
+            throw new Error('Unknown message type');
+        }
+    }
+    return result;
+}
+
+const events = compile(msgs);
+console.log(events);
 
 const TIME_SCALE = 2.0;
+const FADEIN_TIME = 0.5;
+const FADEOUT_TIME = 0.5;
 
 function main(init, draw) {
     renderState.ctx = document.getElementById('canvas').getContext('2d');
@@ -112,30 +146,44 @@ function draw() {
             p.vx = uniform(-2, 2);
         }
     }
-    ctx.font = "72px Lato";
-    ctx.fillText("Begin", 200, 100);
-}
-
-function handleEvent(evt) {
-    const elem = document.createElement('div');
-    elem.innerText = evt.msg;
-    elem.style.position = 'relative';
-    const f = fonts[evt.font];
-    elem.style.fontFamily = f.fontFamily;
-    elem.style.fontSize = `${f.fontSize}px`;
-    elem.style.left = `${evt.pos[0]}px`;
-    elem.style.top = `${evt.pos[1]}px`;
-    elem.classList.add('fadein-text');
-    document.body.appendChild(elem);
-    setTimeout(() => {
-        elem.classList.add('fadeout-text');
-    }, evt.keep * 1000 * TIME_SCALE);
+    for (const evt of events) {
+        if (t > evt.t && t <= evt.t + evt.keep + FADEOUT_TIME) {
+            ctx.save();
+            if (t > evt.t && t < evt.t + FADEIN_TIME) {
+                const x = (t - evt.t) / FADEIN_TIME;
+                ctx.globalAlpha = x;
+            }
+            if (t > evt.t + evt.keep && t <= evt.t + evt.keep + FADEOUT_TIME) {
+                const x = (t - evt.t - evt.keep) / FADEOUT_TIME;
+                ctx.globalAlpha = 1 - x;
+            }
+            const f = fonts[evt.font];
+            ctx.font = f;
+            const lines = evt.msg.split('\n');
+            const measures = lines.map((txt) => ctx.measureText(txt));
+            let maxW = 0;
+            let sumH = 0;
+            let ascent = measures[0].fontBoundingBoxAscent;
+            for (const m of measures) {
+                maxW = Math.max(maxW, m.width);
+                sumH += ascent;
+            }
+            let x = SCREEN_W / 2 + evt.pos[0] - maxW / 2;
+            let y = SCREEN_H / 2 + evt.pos[1] - sumH / 2;
+            for (let idx = 0; idx < lines.length; idx++) {
+                const line = lines[idx];
+                let center_dx = (maxW - measures[idx].width) / 2;
+                // align left
+                ctx.fillText(line, x + center_dx, y);
+                // align center
+                y += ascent;
+            }
+            ctx.restore();
+        }
+    }
 }
 
 document.addEventListener("DOMContentLoaded", async (event) => {
     main(init, draw);
-    for (const evt of events) {
-        setTimeout(handleEvent, evt.t * 1000 * TIME_SCALE, evt);
-    }
 });
 

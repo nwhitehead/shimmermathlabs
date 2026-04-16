@@ -31,34 +31,12 @@ body {
     aspect-ratio: 16 / 9;
     background-color: #000;
 }
-.centered {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-@keyframes fadein {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-@keyframes fadeout {
-    from { opacity: 1; }
-    to { opacity: 0; }
-}
-.fadein-text {
-    animation: fadein 1.0s forwards;
-}
-.fadeout-text {
-    animation: fadeout 1.0s forwards;
-}
 
 </style>
 </head>
 <body>
     <div class="fullscreen">
         <canvas id="canvas" width="1280" height="720"></canvas>
-        <div id="main" class="centered">
-        </div>
     </div>
     <script type="module" src="poem.js"></script>
 </body>
