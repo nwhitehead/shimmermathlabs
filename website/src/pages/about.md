@@ -6,9 +6,9 @@ pubDate: 'December 9 2025'
 
 ![Nathan on a mountain outside Wenatchee, WA wearing an orange mountain biking helmet, black shirt, and brown sunglasses.](../assets/me.png)
 
-_Shimmer Math Labs_ is a small software development company that
-specializes in high quality mathematical programming. We build amazing
-things to make your reality more interesting.
+_Shimmer Math Labs_ is a small software development company that specializes in
+high quality mathematical programming. We build amazing things to make your
+reality more interesting.
 
 Nathan is a professional software developer and the founder of _Shimmer Math
 Labs_. They have been programming since they were 8 and trying to make computers
