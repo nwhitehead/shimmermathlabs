@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+<title>Radiant Abyss</title>
+<style>
+body {
+    margin: 0;
+    padding: 0;
+}
+.fullscreen {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+}
+.fullscreen canvas {
+    object-fit: contain;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 16 / 9;
+    background-color: #000;
+}
+</style>
+</head>
+<body>
+    <div class="fullscreen">
+        <canvas id="canvas" width="1280" height="720"></canvas>
+    </div>
+    <script src="poem.js"></script>
+</body>
+</html>
