@@ -1,5 +1,5 @@
 import { MRG32k3a } from './prng.js';
-import { perlin2 } from './perlin.js';
+import { perlin3 } from './perlin.js';
 
 const SCREEN_W = 1280;
 const SCREEN_H = 720;
@@ -19,8 +19,6 @@ let renderState = {
 };
 
 function main(init, draw) {
-    console.log('this is the poem');
-    renderState.petal.src = 'petal.png';
     renderState.ctx = document.getElementById('canvas').getContext('2d');
     renderState.startTime = Date.now();
 
@@ -43,22 +41,33 @@ function drawRotScale(ctx, img, rot, scale, x, y) {
 }
 
 function randomPetal() {
+    const x = uniform(0, SCREEN_W);
+    const y = uniform(0, SCREEN_H);
+    const r = uniform(0, 2 * Math.PI);
+    const dr = uniform(-1, 1) * 0.05;
+    const vx = 0;
+    const vy = uniform(0, 1) + 3.0;
     return {
-        x: uniform(0, SCREEN_W),
-        y: uniform(0, SCREEN_H),
-        r: uniform(0, 2 * Math.PI),
-        dr: uniform(-1, 1) * 0.05,
-        vx: uniform(-1, 1),
-        vy: 2,
+        x,
+        y,
+        r,
+        dr,
+        vx,
+        vy,
     };
 }
 
 function init() {
+    renderState.petal.src = 'petal.png';
     renderState.petals = [];
     for (let i = 0; i < NUM_PETALS; i++) {
         renderState.petals.push(randomPetal());
     }
 }
+
+const BASE_PV = 0.001;
+const SCALE_PV = 5.0;
+const SCALE_T = 0.1;
 
 function draw() {
     renderState.time = (Date.now() - renderState.startTime) * 0.001;
@@ -76,6 +85,7 @@ function draw() {
             Object.assign(p, randomPetal());
             p.y = 0;
         }
+        p.vx = SCALE_PV * perlin3(p.x * BASE_PV, p.y * BASE_PV, SCALE_T * t);
     }
 }
 
