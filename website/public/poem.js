@@ -17,14 +17,23 @@ function main() {
     f();
 }
 
+function drawRotScale(ctx, img, rot, scale, x, y) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scale, scale);
+    ctx.rotate(rot);
+    ctx.drawImage(img, -img.width * 0.5, -img.height * 0.5);
+    ctx.restore();
+}
+
 function draw() {
     renderState.time = (Date.now() - renderState.startTime) * 0.001;
     let ctx = renderState.ctx;
     ctx.fillStyle = "#eee";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "#000";
-    let x = renderState.time * 100.0;
-    ctx.fillRect(x, 0, 100, 100);
+    const t = renderState.time;
+    drawRotScale(ctx, renderState.petal, t, 0.1, 200, 200);
 }
 
 document.addEventListener("DOMContentLoaded", async (event) => {
