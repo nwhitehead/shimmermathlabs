@@ -6,7 +6,7 @@ const SCREEN_H = 720;
 
 const SEED = 1234;
 const NUM_PETALS = 100;
-const CURTAIN_SPEED = 0.5;
+const CURTAIN_SPEED = 0.2;
 
 const prng = MRG32k3a(SEED);
 
@@ -23,7 +23,7 @@ function newImage(src) {
 let renderState = {
     time: 0,
     curtain: 1,
-    curtainGoal: 0,
+    curtainGoal: 1,
     lastTime: 0,
     petal: newImage('petal.png'),
     transition: newImage('transition.png'),
@@ -33,8 +33,9 @@ let renderState = {
 const fonts = [
     '72px Lato',
 ];
-const d = 1;
-const dd = 2;
+const d = 1.5;
+const dd = 3.0;
+const ddd = 7.0;
 
 const msgs = [
     // d, 
@@ -63,11 +64,30 @@ const msgs = [
     // d,
     // "after we're gone.", dd,
     // dd,
-    "Nowhere long,\nthese petals fall", dd,
+    // "Nowhere long,\nthese petals fall", dd,
+    // d,
+    // "out of one realm", dd,
+    // d,
+    // { curtain: 0.7 }, "and into another,\nstate after state.", dd,
+    // dd,
+    // "In the midst", dd,
+    // d,
+    // "of these petals hurrying", dd,
+    // d,
+    // "and our own falling", dd,
+    // { pos: [200, 30] }, "and forgetting.", dd,
+    // dd,
+    // "I look into your eyes", dd,
+    // d,
+    "and spy over my shoulder", dd,
     d,
-    "out of one realm", dd,
-    d,
-    "and into another,\nstate after state.", dd,
+    { curtain: 0 }, "an avalanche of flowers\nplunging into an abyss", dd,
+    ddd,
+    "THE END",
+    ddd,
+    "Radiant Abyss by Li-Young Lee", dd,
+    dd,
+    "Programmed by Nathan Whitehead", dd,
     dd,
 ];
 
@@ -77,6 +97,7 @@ function compile(msgs) {
     let font = 0;
     let align = 'center';
     let pos = [0, 0];
+    let curtain = 1;
     for (const msg of msgs) {
         if (typeof msg === 'number') {
             t += msg;
@@ -88,11 +109,12 @@ function compile(msgs) {
             }
         } else if (typeof msg === 'string') {
             result.push({
-                t, msg, font, pos, align, pos, keep: 0,
+                t, msg, font, pos, align, pos, curtain, keep: 0,
             });
             pos = [0, 0];
         } else {
-            if (msg.pos) pos = msg.pos;
+            if (msg.pos !== undefined) pos = msg.pos;
+            if (msg.curtain !== undefined) curtain = msg.curtain;
         }
     }
     return result;
@@ -191,6 +213,7 @@ function draw() {
     for (const evt of events) {
         if (t > evt.t && t <= evt.t + evt.keep + FADEOUT_TIME) {
             ctx.save();
+            renderState.curtainGoal = evt.curtain;
             if (t > evt.t && t < evt.t + FADEIN_TIME) {
                 const x = (t - evt.t) / FADEIN_TIME;
                 ctx.globalAlpha = x;
