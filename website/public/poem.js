@@ -38,7 +38,7 @@ const dd = 3.0;
 const ddd = 7.0;
 
 const msgs = [
-    d, 
+    dd, 
     'Come inside', d,
     d,
     'this blizzard\nof falling apple blossoms', dd,
@@ -88,6 +88,8 @@ const msgs = [
     "Radiant Abyss by Li-Young Lee", dd,
     dd,
     "Programmed by Nathan Whitehead", dd,
+    dd,
+    "Music by Cobalt Rabbit", dd,
     dd,
 ];
 
@@ -272,5 +274,16 @@ function draw() {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-    main(init, draw);
+    const button = document.getElementById('play');
+    button.addEventListener('click', () => {
+        const canvas = document.createElement('canvas');
+        canvas.id = 'canvas';
+        canvas.width = 1280;
+        canvas.height = 720;
+        button.replaceWith(canvas);
+        const music = document.getElementById('bgmusic');
+        music.volume = 0.3;
+        music.play();
+        main(init, draw);
+    });
 });

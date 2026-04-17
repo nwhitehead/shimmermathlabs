@@ -30,12 +30,25 @@ body {
     aspect-ratio: 16 / 9;
     background-color: #000;
 }
-
+button {
+    position: relative;
+    display: flex;
+    background-color: #000088;
+    color: #fff;
+    padding: 20px 50px 20px 50px;
+    border-radius: 50px;
+    margin: auto;
+    width: fit-content;
+}
+button:hover {
+    background-color: #44f;
+}
 </style>
 </head>
 <body>
+    <audio id="bgmusic" src="cliffs.opus"></audio>
     <div class="fullscreen">
-        <canvas id="canvas" width="1280" height="720"></canvas>
+        <button id="play">Play</button>
     </div>
     <script type="module" src="poem.js"></script>
 </body>
