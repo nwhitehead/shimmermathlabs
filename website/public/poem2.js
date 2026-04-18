@@ -35,59 +35,149 @@ const d = 1.5;
 const dd = 3.0;
 const ddd = 7.0;
 
+/*
+
+passages ii, 10 new filaments
+gloam panacea - 8 Luminous
+new rites - 1 new dawn
+first breath of spring - 1 sun through the mist
+what remains at the edge of it all - 3 sympathetic resonance
+
+
+THE END OF FASCISM LOOKS LIKE CENTURIES OF QUEERS
+DANCING ON THE GRAVE OF
+1. CAPITALISM
+2. THE STATE
+3. COLONIALISM
+4. NAZIS
+5. RACISM
+6. OPPRESSION
+
+IT WILL BE A GRAND PARTY EVEN GRANDER THAN MARDI GRAS
+& THERE WILL BE NO REASON TO SLEEP B/C THERE WILL BE NO
+NEED TO WORK & THERE WILL BE SUCH A REVELATORY PALLOR
+TO THE WHOLE THING THE PHOTOS WILL BE EXQUISITE & THE
+LIBATIONS & SNACKS FUCKING DELICIOUS THERE WILL BE A
+GIANT DANCE PARTY & CLUB CHAI WILL DJ & IT WILL BE AT
+THE STUD & WE’LL ALL FUCKING DANCE UNTIL WE SWEAT
+HARD & MAKEUP RUNS BETWEEN FACES
+A TRANSFERENCE
+A TRANSFUSION OF GLAM
+
+A FUSION OF SWEATING BODIES INTO A WHATEVER
+SINGULARITY A TRANSFUSION OUT OF A FUCKING OPPRESSED
+MISERABLE EXISTENCE INTO A REVELRY A FULL BLOWN
+REVELRY OF QUEERNESS & DESIRE THAT WE HAVE ONLY NOW
+JUST BARELY BEGUN TO IMAGINE
+JUST BARELY BEGUN TO IMAGINE
+JUST BARELY BEGUN TO IMAGINE
+
+Introduction to _Villainy_, Andrea Abi-Karam.
+*/
+
+
 const msgs = [
-    dd, 
-    'Come inside', d,
+    d, 
+    'THE END OF FASCISM', dd,
     d,
-    'this blizzard\nof falling apple blossoms', dd,
+    'LOOKS LIKE', dd,
+    d,
+    'CENTURIES OF QUEERS', dd,
+    d,
+    'DANCING ON\nTHE GRAVE OF', dd,
+    d,
+    "1. CAPITALISM", dd,
+    d,
+    "2. THE STATE", dd,
+    d,
+    "3. COLONIALISM", dd,
+    d,
+    "4. NAZIS", dd,
+    d,
+    "5. RACISM", dd,
+    d,
+    "6. OPPRESSION", dd,
+    "IT WILL BE A GRAND PARTY", dd,
+    d,
+    "EVEN GRANDER THAN\nMARDI GRAS", dd,
+    d,
+    "& THERE WILL BE", d,
+    d,
+    "NO REASON TO SLEEP", d,
+    d,
+    "B/C THERE WILL BE", d,
+    d,
+    "NO NEED TO WORK", d,
+    d,
+    "& THERE WILL BE", d,
+    d,
+    "SUCH A\nREVELATORY PALLOR", dd,
+    d,
+    "TO THE WHOLE THING", d,
+    d,
+    "THE PHOTOS WILL BE", d,
+    d,
+    "EXQUISITE", d,
+    d,
+    "& THE LIBATIONS & SNACKS", d,
+    d,
+    "FUCKING DELICIOUS", d,
+    d,
+    "THERE WILL BE A", d,
+    d,
+    "GIANT DANCE PARTY", d,
+    d,
+    "& CLUB CHAI WILL DJ", d,
+    d,
+    "& IT WILL BE AT\nTHE STUD", d,
+    d,
+    "& WE'LL ALL FUCKING DANCE", d,
+    d,
+    "UNTIL WE SWEAT", d,
+    d,
+    "HARD", d,
+    d,
+    "& MAKEUP RUNS", d,
+    d,
+    "BETWEEN FACES", d,
     dd,
-    "It's light in here.", dd,
-    d,
-    "Let me look at you.", dd,
+    "A TRANSFERENCE", dd,
     dd,
-    "Surrounded by all of\nthis brightness", dd,
-    d,
-    "flying apart, shining", dd,
-    d,
-    "dismantled to make room\nfor more shining.", dd,
+    "A TRANSFUSION OF GLAM", dd,
     dd,
-    "one of us should say something", dd,
+    "A FUSION OF\nSWEATING BODIES", d,
     d,
-    "Or we should both say something,", dd,
-    { pos: [0, 40] }, "something true", dd,
+    "INTO A WHATEVER", d,
     d,
-    "before we were born, true", dd,
+    "SINGULARITY", d,
     d,
-    "while we lived and true", dd,
+    "A TRANSFUSION OUT OF A", d,
     d,
-    "after we're gone.", dd,
+    "FUCKING OPPRESSED", d,
+    d,
+    "MISERABLE EXISTENCE",
+    d,
+    { pos: [0, 80] }, "INTO A REVELRY", d,
+    d,
+    "A FULL BLOWN", d,
+    d,
+    "REVELRY OF\nQUEERNESS & DESIRE", dd,
+    d,
+    "THAT WE HAVE ONLY NOW", dd,
     dd,
-    "Nowhere long,\nthese petals fall", dd,
-    d,
-    "out of one realm", dd,
-    d,
-    { curtain: 0.7 }, "and into another,\nstate after state.", dd,
+    "JUST BARELY BEGUN\nTO IMAGINE", dd,
     dd,
-    "In the midst", dd,
-    d,
-    "of these petals hurrying", dd,
-    d,
-    "and our own falling", dd,
-    { pos: [200, 30] }, "and forgetting.", dd,
+    "JUST BARELY\nBEGUN TO IMAGINE", dd,
     dd,
-    "I look into your eyes", dd,
-    d,
-    "and spy over my shoulder", dd,
-    d,
-    { curtain: 0 }, "an avalanche of flowers\nplunging into an abyss", dd,
+    "JUST BARELY BEGUN\nTO IMAGINE", ddd,
     ddd,
-    "THE END",
+    "THE END", dd,
     ddd,
-    "Radiant Abyss by Li-Young Lee", dd,
+    "Text:\nIntroduction to 'Villainy'\nby Andrea Abi-Karam", ddd,
     dd,
-    "Programmed by Nathan Whitehead", dd,
+    "Programmed by\nNathan Whitehead", ddd,
     dd,
-    "Music by Cobalt Rabbit", dd,
+    "Music:\nSympathetic Resonance\nby As Seas Exhale", ddd,
     dd,
 ];
 
@@ -195,7 +285,7 @@ function draw() {
                 sumH += ascent;
             }
             let x = SCREEN_W / 2 + evt.pos[0] - maxW / 2;
-            let y = SCREEN_H / 2 + evt.pos[1];
+            let y = SCREEN_H / 2 + evt.pos[1] - sumH / 2 + ascent;
             for (let idx = 0; idx < lines.length; idx++) {
                 const line = lines[idx];
                 let center_dx = (maxW - measures[idx].width) / 2;

@@ -89,7 +89,7 @@ const msgs = [
     dd,
     "Programmed by Nathan Whitehead", dd,
     dd,
-    "Music by Cobalt Rabbit", dd,
+    "Music: Cliffs by Cobalt Rabbit", dd,
     dd,
 ];
 
