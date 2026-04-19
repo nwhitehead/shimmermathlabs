@@ -40,12 +40,26 @@ void main() {
         z += d * detail_level;
         c += (color_push * sin(p.z * color_spread + u_time * color_speed + cxyvec) + 1.0) / d;
     }
-    fragColor = tanh(c * c * 0.0000001);
+    //fragColor = tanh(c * c * 0.0000001);
+    fragColor = uColor;
 }
 `;
 
 const SCREEN_W = 1280;
 const SCREEN_H = 720;
+
+class BasicVar {
+    constructor(initValue) {
+        this.x = initValue;
+    }
+    get value() {
+        return this.x;
+    }
+    set value(newValue) {
+        this.x = newValue;
+    }
+    update() {}
+}
 
 class SmoothVar {
     constructor(initValue, speed) {
@@ -80,9 +94,11 @@ const dd = 3.0;
 const ddd = 7.0;
 
 const msgs = [
-    dd, 
+    dd,
+    { uColor: [1,0,0,1] },
     'THE END OF FASCISM', dd,
     d,
+    { x: 1 },
     'LOOKS LIKE', dd,
     d,
     'CENTURIES OF QUEERS', dd,
@@ -239,7 +255,11 @@ function main(init, draw) {
 }
 
 function init() {
-    renderState.qs.uniform4f("uColor", () => [1.0, 1.0, 0.0, 1.0]);
+    renderState.vars = {
+        uColor: new BasicVar([1.0, 1.0, 0.0, 1.0]),
+        x: new SmoothVar(0.0),
+    };
+    renderState.qs.uniform4f("uColor", () => renderState.vars.uColor.value);
 }
 
 let cached = false;
@@ -250,10 +270,21 @@ function draw() {
     let ctx = renderState.ctx;
     ctx.clearRect(0, 0, SCREEN_W, SCREEN_H);
     const t = renderState.time;
-    // Draw text
+    // Update smooth vars
+    for (const [key, value] of Object.entries(renderState.vars)) {
+        value.update();
+    }
+    // Process events
     for (const evt of events) {
         const shouldRender = cached === false || (t > evt.t && t <= evt.t + evt.keep + FADEOUT_TIME);
-        if (shouldRender) {
+        const shouldUpdate = (t >= evt.t && renderState.lastTime < evt.t) && evt.update !== undefined;
+        if (shouldUpdate) {
+            // evt is a variable update event
+            for (const [key, value] of Object.entries(evt.update)) {
+                renderState.vars[key].value = value;
+            }
+        }
+        if (shouldRender && evt.msg !== undefined) {
             ctx.save();
             if (cached === false) {
                 ctx.globalAlpha = 0.5;
