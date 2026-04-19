@@ -8,11 +8,14 @@ in vec2 vPosition;
 
 uniform float uTime; // time
 
-uniform float uColorPush;  // 0.0 to 10.0 (bw to oversat)
+uniform float uColor;  // 0.0 to 10.0 (bw to oversat)
 uniform float uBrightness; // 0.0 to 1.0 (black to lit)
 uniform float uColorSpeed; // -5 to 5, 0 ok
 uniform float uColorSpread; // 0.0 to 5.0 (single color to too many colors)
 uniform float uRotateSpeed; // -10 to 10, 0 ok
+uniform float uForwardSpeed; // -30 to 30, 0 ok
+uniform float uDetail; // 0.3 is normal
+
 out vec4 fragColor;
 
 void main() {
@@ -24,25 +27,23 @@ void main() {
     float d;
     vec4 xyvec = vec4(0, 33, 11, 0);
     vec4 cxyvec = vec4(1, 3, 5, 0);
-    float forward_speed = 1.0; // -30 to 30, 0 ok
     float detail = 1.5;
     float detail_level = 0.3;
     int steps = 150;
     float twist = 0.122;
     vec2 pd;
-    float u_time = uTime;
     for(int i = 0; i < /* steps */150; i++)
     {
         vec3 coord = vec3(vPosition.x, vPosition.y, -1.0);
         vec3 ncoord = normalize(coord);
 
         p = z * ncoord;
-        p.z -= u_time * forward_speed;
-        p.xy *= mat2(cos(-z * twist + u_time * uRotateSpeed * 0.1 + xyvec));
-        pd = cos(p + cos(p.yzx + p.z - u_time * uRotateSpeed * 0.2)).xy;
+        p.z -= uTime * uForwardSpeed;
+        p.xy *= mat2(cos(-z * twist + uTime * uRotateSpeed * 0.1 + xyvec));
+        pd = cos(p + cos(p.yzx + p.z - uTime * uRotateSpeed * 0.2)).xy;
         d = length(pd) / 6.0;
-        z += d * detail_level;
-        c += (uColorPush * sin(p.z * uColorSpread + u_time * uColorSpeed + cxyvec) + 1.0) / d;
+        z += d * uDetail;
+        c += (uColor * sin(p.z * uColorSpread + uTime * uColorSpeed + cxyvec) + 1.0) / d;
     }
     fragColor = tanh(c * c * 0.0000001) * uBrightness;
 }
@@ -99,10 +100,12 @@ const ddd = 7.0;
 
 const msgs = [
     d,
-    // { uBrightness: 1.0, uColorPush: 1.0, uColorSpeed: 5.0 },
-    { uColorSpread: 10.0, uRotateSpeed: -1.0 },
+    // { uBrightness: 1, uColor: 1, uColorSpeed: 5 },
+    { uColor: 0, uColorSpread: 1, uRotateSpeed: 0, uForwardSpeed: 1, uDetail: 0.1},
     ddd,
+    { uDetail: 1.8 },
     ddd,
+    { uDetail: 0.1 },
 
     dd,
     { uBrightness: 0.1 },
@@ -113,7 +116,7 @@ const msgs = [
     'CENTURIES OF QUEERS', dd,
     d,
     { uBrightness: 0.5 },
-    { uColorPush: 0.5 },
+    { uColor: 0.5 },
     'DANCING ON THE GRAVE OF', dd,
     d,
     { uBrightness: 0.8 },
@@ -121,7 +124,7 @@ const msgs = [
     d,
     "2. THE STATE", dd,
     d,
-    { uBrightness: 1.0 },
+    { uBrightness: 1 },
     "3. COLONIALISM", dd,
     d,
     "4. NAZIS", dd,
@@ -269,17 +272,21 @@ function main(init, draw) {
 
 function init() {
     renderState.vars = {
-        uColorPush: new SmoothVar(1),
+        uColor: new SmoothVar(1),
         uBrightness: new SmoothVar(1),
         uColorSpeed: new SmoothVar(1),
         uColorSpread: new SmoothVar(0.33),
         uRotateSpeed: new SmoothVar(0),
+        uForwardSpeed: new SmoothVar(0),
+        uDetail: new SmoothVar(0.3),
     };
-    renderState.qs.uniform1f("uColorPush", () => renderState.vars.uColorPush.value);
+    renderState.qs.uniform1f("uColor", () => renderState.vars.uColor.value);
     renderState.qs.uniform1f("uBrightness", () => renderState.vars.uBrightness.value);
     renderState.qs.uniform1f("uColorSpeed", () => renderState.vars.uColorSpeed.value);
     renderState.qs.uniform1f("uColorSpread", () => renderState.vars.uColorSpread.value);
     renderState.qs.uniform1f("uRotateSpeed", () => renderState.vars.uRotateSpeed.value);
+    renderState.qs.uniform1f("uForwardSpeed", () => renderState.vars.uForwardSpeed.value);
+    renderState.qs.uniform1f("uDetail", () => renderState.vars.uDetail.value);
 }
 
 let cached = false;
