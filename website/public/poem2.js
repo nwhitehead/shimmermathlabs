@@ -223,7 +223,7 @@ function flow(x, y, z) {
 function draw() {
     renderState.time = (Date.now() - renderState.startTime) * 0.001;
     let gl = renderState.gctx;
-    gl.clearColor(0.0, 1.0, 0.0, 1.0);
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     let ctx = renderState.ctx;
@@ -259,11 +259,11 @@ function draw() {
                 const line = lines[idx];
                 let center_dx = (maxW - measures[idx].width) / 2;
                 // align left
-                ctx.strokeStyle = "#fff";
+                ctx.strokeStyle = "#000";
                 ctx.lineWidth = 20.0;
                 ctx.lineJoin = 'round';
                 ctx.strokeText(line, x + center_dx, y);
-                ctx.fillStyle = "#000";
+                ctx.fillStyle = "#fff";
                 ctx.fillText(line, x + center_dx, y);
                 // align center
                 y += ascent;
