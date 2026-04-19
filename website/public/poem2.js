@@ -15,6 +15,7 @@ uniform float uColorSpread; // 0.0 to 5.0 (single color to too many colors)
 uniform float uRotateSpeed; // -10 to 10, 0 ok
 uniform float uForwardSpeed; // -30 to 30, 0 ok
 uniform float uDetail; // 0.3 is normal
+uniform float uZOffset;
 uniform vec4 uColorTilt; // chooses palette of random colors
 
 
@@ -40,7 +41,7 @@ void main() {
         vec3 ncoord = normalize(coord);
 
         p = z * ncoord;
-        p.z -= uTime * uForwardSpeed;
+        p.z -= uTime * uForwardSpeed + uZOffset;
         p.xy *= mat2(cos(-z * twist + uTime * uRotateSpeed * 0.1 + xyvec));
         pd = cos(p + cos(p.yzx + p.z - uTime * uRotateSpeed * 0.2)).xy;
         d = length(pd) / 6.0;
@@ -57,6 +58,7 @@ const SCREEN_H = 720;
 class BasicVar {
     constructor(initValue) {
         this.x = initValue;
+        this.prev = initValue;
     }
     get value() {
         return this.x;
@@ -67,12 +69,15 @@ class BasicVar {
     setInstant(newValue) {
         this.x = newValue;
     }
-    update() {}
+    update() {
+        this.prev = this.x;
+    }
 }
 
 class SmoothVar {
     constructor(initValue, speed) {
         this.x = initValue;
+        this.prev = initValue;
         this.goalValue = initValue;
         this.speed = speed ?? 0.01;
     }
@@ -87,6 +92,7 @@ class SmoothVar {
         this.goalValue = newValue;
     }
     update() {
+        this.prev = this.x;
         this.x = this.x + (this.goalValue - this.x) * this.speed;
     }
 }
@@ -224,6 +230,7 @@ const msgs = [
     { uBrightness: 1, uColor: 1.5, uColorSpeed: 2, uRotateSpeed: 0, uForwardSpeed: 1, uDetail: 0.7, uColorTilt: [3, 1, 5, 0] },
     "& CLUB CHAI WILL DJ", d,
     d,
+    ddd,
     { uBrightness: 1, uColor: 1.5, uColorSpeed: 2, uRotateSpeed: 0, uForwardSpeed: 1.2, uDetail: 0.6, uColorTilt: [3, 1, 5, 0] },
     "& IT WILL BE AT\nTHE STUD", d,
     d,
@@ -341,6 +348,7 @@ function init() {
         uForwardSpeed: new SmoothVar(0, 1.0),
         uDetail: new SmoothVar(0.3),
         uColorTilt: new Smooth4Var([1, 0, 2, 0]),
+        uZOffset: new BasicVar(0),
     };
     renderState.qs.uniform1f("uColor", () => renderState.vars.uColor.value);
     renderState.qs.uniform1f("uBrightness", () => renderState.vars.uBrightness.value);
@@ -350,6 +358,8 @@ function init() {
     renderState.qs.uniform1f("uForwardSpeed", () => renderState.vars.uForwardSpeed.value);
     renderState.qs.uniform1f("uDetail", () => renderState.vars.uDetail.value);
     renderState.qs.uniform4f("uColorTilt", () => renderState.vars.uColorTilt.value);
+    renderState.qs.uniform4f("uColorTilt", () => renderState.vars.uColorTilt.value);
+    renderState.qs.uniform1f("uZOffset", () => renderState.vars.uZOffset.value);
 }
 
 let cached = false;
@@ -361,9 +371,19 @@ function draw() {
     ctx.clearRect(0, 0, SCREEN_W, SCREEN_H);
     const t = renderState.time;
     // Update smooth vars
+    // Lock out rendering so we update all vars "simultaneously"
+    renderState.qs.shouldRender = false;
     for (const [key, value] of Object.entries(renderState.vars)) {
         value.update();
+        if (key === 'uForwardSpeed') {
+            if (value.prev !== value.value) {
+                const t = renderState.qs.time;
+                renderState.vars.uZOffset.value -= value.value * t - value.prev * t;
+            }
+        }
     }
+    renderState.qs.shouldRender = true;
+
     // Process events
     for (const evt of events) {
         const shouldRender = cached === false || (t > evt.t && t <= evt.t + evt.keep + FADEOUT_TIME);

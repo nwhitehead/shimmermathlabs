@@ -43,6 +43,12 @@ export class QuadShader {
             writable: true,
             value: state
         });
+        Object.defineProperty(this, "time", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: 0
+        });
         // When set to false, the rendering loop stops
         Object.defineProperty(this, "shouldRender", {
             enumerable: true,
@@ -140,7 +146,11 @@ export function animate(canvas, fragShaderSrc) {
     observer.observe(canvas);
     /* uTime starts when the quad-shader was loaded */
     const loadMillis = performance.now();
-    quadShader.uniform1f("uTime", () => (performance.now() - loadMillis) / 1000);
+    quadShader.uniform1f("uTime", () => {
+        const t = (performance.now() - loadMillis) / 1000;
+        quadShader.time = t;
+        return t;
+    });
     return quadShader;
 }
 // The main function that sets everything up and starts the animation loop
