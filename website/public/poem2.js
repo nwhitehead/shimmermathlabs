@@ -1,9 +1,19 @@
 import { MRG32k3a } from './prng.js';
 import { perlin3 } from './perlin.js';
+import { animate, getComputedStylePropRGBA } from './quad-shader.js';
 
-const VERTEX_SHADER = `
+const FRAGMENT_SHADER = `
+precision lowp float;
+varying vec2 vPosition;
+uniform vec4 uColor;
+uniform float uTime;
 void main() {
-    gl_Position = vec4(position.x, position.y, position.z, 1.0);
+    float theta = atan(vPosition.y, vPosition.x);
+    float rho = length(vPosition.xy);
+    float v = mod(rho - uTime/10., .2);
+    float alpha = smoothstep(.1, .2, v);
+    alpha *= (1. - smoothstep(0., 1., rho));
+    gl_FragColor = alpha * uColor;
 }
 `;
 
@@ -212,6 +222,50 @@ function drawRotScale(ctx, img, rot, scale, x, y) {
 function init() {
 }
 
+//
+// creates a shader of the given type, uploads the source and
+// compiles it.
+//
+function loadShader(gl, type, source) {
+    const shader = gl.createShader(type);
+    // Send the source to the shader object
+    gl.shaderSource(shader, source);
+    // Compile the shader program
+    gl.compileShader(shader);
+    // See if it compiled successfully
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        alert(
+            `An error occurred compiling the shaders: ${gl.getShaderInfoLog(shader)}`
+        );
+        gl.deleteShader(shader);
+        return null;
+    }
+    return shader;
+}
+
+//
+// Initialize a shader program, so WebGL knows how to draw our data
+//
+function initShaderProgram(gl, vsSource, fsSource) {
+    const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
+    const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
+    // Create the shader program
+    const shaderProgram = gl.createProgram();
+    gl.attachShader(shaderProgram, vertexShader);
+    gl.attachShader(shaderProgram, fragmentShader);
+    gl.linkProgram(shaderProgram);
+    // If creating the shader program failed, alert
+    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+        alert(
+            `Unable to initialize the shader program: ${gl.getProgramInfoLog(
+                shaderProgram
+            )}`
+        );
+        return null;
+    }
+    return shaderProgram;
+}
+
 function flow(x, y, z) {
     const eps = 1e-4;
     const v0 = perlin3(x, y, z);
@@ -315,6 +369,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         const music = document.getElementById('bgmusic');
         music.volume = 0.3;
         music.play();
+
+        const qs = animate(glcanvas, FRAGMENT_SHADER);
+        qs.uniform4f("uColor", () => [1.0, 1.0, 0.0, 1.0]);
+
         main(init, draw);
     });
 });
