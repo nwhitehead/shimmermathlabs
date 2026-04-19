@@ -1,6 +1,12 @@
 import { MRG32k3a } from './prng.js';
 import { perlin3 } from './perlin.js';
 
+const VERTEX_SHADER = `
+void main() {
+    gl_Position = vec4(position.x, position.y, position.z, 1.0);
+}
+`;
+
 const SCREEN_W = 1280;
 const SCREEN_H = 720;
 
@@ -178,8 +184,8 @@ const FADEIN_TIME = 0.5;
 const FADEOUT_TIME = 0.5;
 
 function main(init, draw) {
-    //renderState.ctx = document.getElementById('canvas').getContext('2d');
-    renderState.gctx = document.getElementById('canvas').getContext('webgl');
+    renderState.ctx = document.getElementById('canvas').getContext('2d');
+    renderState.gctx = document.getElementById('glcanvas').getContext('webgl');
     renderState.startTime = Date.now();
 
     init();
@@ -204,8 +210,6 @@ function drawRotScale(ctx, img, rot, scale, x, y) {
 }
 
 function init() {
-    const vertexTxt = document.getElementById("vertexShader").textContent;
-    console.log('vertex', vertexTxt);
 }
 
 function flow(x, y, z) {
@@ -219,13 +223,12 @@ function flow(x, y, z) {
 function draw() {
     renderState.time = (Date.now() - renderState.startTime) * 0.001;
     let gl = renderState.gctx;
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    gl.clearColor(0.0, 1.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
-    return;
 
     let ctx = renderState.ctx;
-    ctx.fillStyle = "#eee";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, SCREEN_W, SCREEN_H);
+    return;
     ctx.fillStyle = "#000";
     const t = renderState.time;
     // Draw text
@@ -297,11 +300,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         canvas.id = 'canvas';
         canvas.width = SCREEN_W;
         canvas.height = SCREEN_H;
-        canvas.style.position = "fixed";
+        canvas.style.position = "absolute";
         canvas.style.left = 0;
         canvas.style.top = 0;
+        canvas.style.zIndex = 2;
         const glcanvas = canvas.cloneNode();
         glcanvas.id = 'glcanvas';
+        glcanvas.style.zIndex = 1;
         button.replaceWith(canvas);
         canvas.parentNode.appendChild(glcanvas);
         const music = document.getElementById('bgmusic');
