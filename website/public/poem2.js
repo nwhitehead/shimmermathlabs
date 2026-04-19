@@ -97,7 +97,7 @@ const dd = 3.0;
 const ddd = 7.0;
 
 const msgs = [
-    d, 
+    dd, 
     'THE END OF FASCISM', dd,
     d,
     'LOOKS LIKE', dd,
@@ -223,7 +223,14 @@ function compile(msgs) {
             });
             pos = [0, 0];
         } else {
-            if (msg.pos !== undefined) pos = msg.pos;
+            if (msg.pos !== undefined) {
+                pos = msg.pos;
+            } else {
+                // Var set
+                result.push({
+                    t, update: msg,
+                });
+            }
         }
     }
     return result;
@@ -316,6 +323,8 @@ function flow(x, y, z) {
     return { vx, vy };
 }
 
+let cached = false;
+
 function draw() {
     renderState.time = (Date.now() - renderState.startTime) * 0.001;
 
@@ -324,15 +333,17 @@ function draw() {
     const t = renderState.time;
     // Draw text
     for (const evt of events) {
-        if (t > evt.t && t <= evt.t + evt.keep + FADEOUT_TIME) {
+        const shouldRender = cached === false || (t > evt.t && t <= evt.t + evt.keep + FADEOUT_TIME);
+        if (shouldRender) {
             ctx.save();
-            if (t > evt.t && t < evt.t + FADEIN_TIME) {
+            if (cached === false) {
+                ctx.globalAlpha = 0.5;
+            } else if (t > evt.t && t < evt.t + FADEIN_TIME) {
                 const x = (t - evt.t) / FADEIN_TIME;
-                ctx.globalAlpha = x;
-            }
-            if (t > evt.t + evt.keep && t <= evt.t + evt.keep + FADEOUT_TIME) {
+                ctx.globalAlpha = Math.max(x, 0.0);
+            } else if (t > evt.t + evt.keep && t <= evt.t + evt.keep + FADEOUT_TIME) {
                 const x = (t - evt.t - evt.keep) / FADEOUT_TIME;
-                ctx.globalAlpha = 1 - x;
+                ctx.globalAlpha = Math.min(1 - x, 0);
             }
             const f = fonts[evt.font];
             ctx.font = f;
@@ -363,6 +374,7 @@ function draw() {
             ctx.restore();
         }
     }
+    cached = true;
 
     renderState.lastTime = renderState.time;
 }
