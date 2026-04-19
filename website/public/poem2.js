@@ -6,10 +6,10 @@ precision mediump float;
 
 in vec2 vPosition;
 
-uniform vec4 uColor; // test
 uniform float uTime; // time
 
 uniform float uColorPush;  // 0.0 to 10.0 (bw to oversat)
+uniform float uBrightness; // 0.0 to 1.0 (black to lit)
 
 out vec4 fragColor;
 
@@ -45,8 +45,7 @@ void main() {
         z += d * detail_level;
         c += (uColorPush * sin(p.z * color_spread + u_time * color_speed + cxyvec) + 1.0) / d;
     }
-    fragColor = tanh(c * c * 0.0000001);
-    //fragColor = uColor;
+    fragColor = tanh(c * c * 0.0000001) * uBrightness;
 }
 `;
 
@@ -98,22 +97,26 @@ const d = 1.5;
 const dd = 3.0;
 const ddd = 7.0;
 
+
 const msgs = [
     dd,
-    { uColorPush: 0.5 },
+    { uBrightness: 0.1 },
     'THE END OF FASCISM', dd,
     d,
-    { x: 1 },
     'LOOKS LIKE', dd,
     d,
     'CENTURIES OF QUEERS', dd,
     d,
+    { uBrightness: 0.5 },
+    { uColorPush: 0.5 },
     'DANCING ON THE GRAVE OF', dd,
     d,
+    { uBrightness: 0.8 },
     "1. CAPITALISM", dd,
     d,
     "2. THE STATE", dd,
     d,
+    { uBrightness: 1.0 },
     "3. COLONIALISM", dd,
     d,
     "4. NAZIS", dd,
@@ -261,12 +264,11 @@ function main(init, draw) {
 
 function init() {
     renderState.vars = {
-        uColor: new BasicVar([1.0, 1.0, 0.0, 1.0]),
         uColorPush: new SmoothVar(0.0),
-        x: new SmoothVar(0.0),
+        uBrightness: new SmoothVar(0.0),
     };
-    renderState.qs.uniform4f("uColor", () => renderState.vars.uColor.value);
     renderState.qs.uniform1f("uColorPush", () => renderState.vars.uColorPush.value);
+    renderState.qs.uniform1f("uBrightness", () => renderState.vars.uBrightness.value);
 }
 
 let cached = false;
