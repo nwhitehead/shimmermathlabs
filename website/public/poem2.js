@@ -35,47 +35,6 @@ const d = 1.5;
 const dd = 3.0;
 const ddd = 7.0;
 
-/*
-
-passages ii, 10 new filaments
-gloam panacea - 8 Luminous
-new rites - 1 new dawn
-first breath of spring - 1 sun through the mist
-what remains at the edge of it all - 3 sympathetic resonance
-
-
-THE END OF FASCISM LOOKS LIKE CENTURIES OF QUEERS
-DANCING ON THE GRAVE OF
-1. CAPITALISM
-2. THE STATE
-3. COLONIALISM
-4. NAZIS
-5. RACISM
-6. OPPRESSION
-
-IT WILL BE A GRAND PARTY EVEN GRANDER THAN MARDI GRAS
-& THERE WILL BE NO REASON TO SLEEP B/C THERE WILL BE NO
-NEED TO WORK & THERE WILL BE SUCH A REVELATORY PALLOR
-TO THE WHOLE THING THE PHOTOS WILL BE EXQUISITE & THE
-LIBATIONS & SNACKS FUCKING DELICIOUS THERE WILL BE A
-GIANT DANCE PARTY & CLUB CHAI WILL DJ & IT WILL BE AT
-THE STUD & WE’LL ALL FUCKING DANCE UNTIL WE SWEAT
-HARD & MAKEUP RUNS BETWEEN FACES
-A TRANSFERENCE
-A TRANSFUSION OF GLAM
-
-A FUSION OF SWEATING BODIES INTO A WHATEVER
-SINGULARITY A TRANSFUSION OUT OF A FUCKING OPPRESSED
-MISERABLE EXISTENCE INTO A REVELRY A FULL BLOWN
-REVELRY OF QUEERNESS & DESIRE THAT WE HAVE ONLY NOW
-JUST BARELY BEGUN TO IMAGINE
-JUST BARELY BEGUN TO IMAGINE
-JUST BARELY BEGUN TO IMAGINE
-
-Introduction to _Villainy_, Andrea Abi-Karam.
-*/
-
-
 const msgs = [
     d, 
     'THE END OF FASCISM', dd,
@@ -84,7 +43,7 @@ const msgs = [
     d,
     'CENTURIES OF QUEERS', dd,
     d,
-    'DANCING ON\nTHE GRAVE OF', dd,
+    'DANCING ON THE GRAVE OF', dd,
     d,
     "1. CAPITALISM", dd,
     d,
@@ -97,17 +56,18 @@ const msgs = [
     "5. RACISM", dd,
     d,
     "6. OPPRESSION", dd,
+    ddd,
     "IT WILL BE A GRAND PARTY", dd,
     d,
     "EVEN GRANDER THAN\nMARDI GRAS", dd,
     d,
     "& THERE WILL BE", d,
     d,
-    "NO REASON TO SLEEP", d,
+    "NO REASON TO SLEEP", dd,
     d,
     "B/C THERE WILL BE", d,
     d,
-    "NO NEED TO WORK", d,
+    "NO NEED TO WORK", dd,
     d,
     "& THERE WILL BE", d,
     d,
@@ -117,11 +77,11 @@ const msgs = [
     d,
     "THE PHOTOS WILL BE", d,
     d,
-    "EXQUISITE", d,
+    "EXQUISITE", dd,
     d,
-    "& THE LIBATIONS & SNACKS", d,
+    "& THE LIBATIONS\n& SNACKS", d,
     d,
-    "FUCKING DELICIOUS", d,
+    "FUCKING DELICIOUS", dd,
     d,
     "THERE WILL BE A", d,
     d,
@@ -131,7 +91,7 @@ const msgs = [
     d,
     "& IT WILL BE AT\nTHE STUD", d,
     d,
-    "& WE'LL ALL FUCKING DANCE", d,
+    "& WE'LL ALL FUCKING DANCE", dd,
     d,
     "UNTIL WE SWEAT", d,
     d,
@@ -149,7 +109,7 @@ const msgs = [
     d,
     "INTO A WHATEVER", d,
     d,
-    "SINGULARITY", d,
+    "SINGULARITY", dd,
     d,
     "A TRANSFUSION OUT OF A", d,
     d,
