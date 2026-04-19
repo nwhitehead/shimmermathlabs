@@ -15,6 +15,8 @@ uniform float uColorSpread; // 0.0 to 5.0 (single color to too many colors)
 uniform float uRotateSpeed; // -10 to 10, 0 ok
 uniform float uForwardSpeed; // -30 to 30, 0 ok
 uniform float uDetail; // 0.3 is normal
+uniform vec4 uColorTilt; // chooses palette of random colors
+
 
 out vec4 fragColor;
 
@@ -43,7 +45,7 @@ void main() {
         pd = cos(p + cos(p.yzx + p.z - uTime * uRotateSpeed * 0.2)).xy;
         d = length(pd) / 6.0;
         z += d * uDetail;
-        c += (uColor * sin(p.z * uColorSpread + uTime * uColorSpeed + cxyvec) + 1.0) / d;
+        c += (uColor * sin(p.z * uColorSpread + uTime * uColorSpeed + uColorTilt) + 1.0) / d;
     }
     fragColor = tanh(c * c * 0.0000001) * uBrightness;
 }
@@ -62,6 +64,9 @@ class BasicVar {
     set value(newValue) {
         this.x = newValue;
     }
+    setInstant(newValue) {
+        this.x = newValue;
+    }
     update() {}
 }
 
@@ -77,14 +82,41 @@ class SmoothVar {
     set value(newValue) {
         this.goalValue = newValue;
     }
+    setInstant(newValue) {
+        this.x = newValue;
+        this.goalValue = newValue;
+    }
     update() {
         this.x = this.x + (this.goalValue - this.x) * this.speed;
     }
 }
 
+class Smooth4Var {
+    constructor(initValue, speed) {
+        this.x = initValue;
+        this.goalValue = initValue;
+        this.speed = speed ?? 0.01;
+    }
+    get value() {
+        return this.x;
+    }
+    set value(newValue) {
+        this.goalValue = newValue;
+    }
+    setInstant(newValue) {
+        this.x = newValue;
+        this.goalValue = newValue;
+    }
+    update() {
+        for (let i = 0; i < 4; i++) {
+            this.x[i] = this.x[i] + (this.goalValue[i] - this.x[i]) * this.speed;
+        }
+    }
+}
+
 let renderState = {
     time: 0,
-    lastTime: 0,
+    lastTime: -1, // make sure it is less than time
     text: [],
     ctx: null,
     qs: null,
@@ -99,122 +131,137 @@ const ddd = 7.0;
 
 
 const msgs = [
-    d,
     // { uBrightness: 1, uColor: 1, uColorSpeed: 5 },
-    { uColor: 0, uColorSpread: 1, uRotateSpeed: 0, uForwardSpeed: 1, uDetail: 0.1},
+    // // Gray, blobby, moving forward
+    // { uBrightness: 1, uColor: 0, uColorSpread: 1, uRotateSpeed: 0, uForwardSpeed: 1, uDetail: 0.1},
+    // Gray, blobby, slow
+    //{ uBrightness: 0.2, uColor: 0, uColorSpread: 1, uRotateSpeed: 0, uForwardSpeed: 0.3, uDetail: 0.1},
+    // // Colorful, slow, medium detail
+    // { uBrightness: 1, uColor: 1, uColorSpread: 1, uColorTilt: [0, 3, 5, 0], uRotateSpeed: 0, uForwardSpeed: 1, uDetail: 0.4},
+    // // Colorful, slow, red cyan
+    // { uBrightness: 1, uColor: 1, uColorSpread: 1, uColorTilt: [1, 0, 0, 0], uRotateSpeed: 0, uForwardSpeed: 1, uDetail: 0.4},
+    // // Colorful, very fast, non-rotating
+    // { uBrightness: 1, uColor: 1, uColorSpread: 1, uColorTilt: [0, 3, 5, 0], uRotateSpeed: -4, uForwardSpeed: 7, uDetail: 0.4},
+    // // Colorful, detailed
+    // { uBrightness: 1, uColor: 1, uColorSpread: 4, uColorTilt: [0, 3, 5, 0], uRotateSpeed: -2, uForwardSpeed: 1, uDetail: 1.4},
+    // // bw, hyperdetailed, almost stopped
+    // { uBrightness: 1, uColor: 0, uColorSpread: 4, uColorTilt: [0, 3, 5, 0], uRotateSpeed: 0, uForwardSpeed: 0.1, uDetail: 2.0},
+    // bw, hyperdetailed, almost stopped
+    { uBrightness: 1, uColor: 0, uColorSpread: 4, uColorTilt: [0, 3, 5, 0], uRotateSpeed: 0, uForwardSpeed: 1.0, uDetail: 1.0},
     ddd,
-    { uDetail: 1.8 },
-    ddd,
-    { uDetail: 0.1 },
+    // ddd,
+    // { uDetail: 1.8 },
+    // ddd,
+    // { uDetail: 0.1 },
 
-    dd,
-    { uBrightness: 0.1 },
-    'THE END OF FASCISM', dd,
-    d,
-    'LOOKS LIKE', dd,
-    d,
-    'CENTURIES OF QUEERS', dd,
-    d,
-    { uBrightness: 0.5 },
-    { uColor: 0.5 },
-    'DANCING ON THE GRAVE OF', dd,
-    d,
-    { uBrightness: 0.8 },
-    "1. CAPITALISM", dd,
-    d,
-    "2. THE STATE", dd,
-    d,
-    { uBrightness: 1 },
-    "3. COLONIALISM", dd,
-    d,
-    "4. NAZIS", dd,
-    d,
-    "5. RACISM", dd,
-    d,
-    "6. OPPRESSION", dd,
-    ddd,
-    "IT WILL BE A GRAND PARTY", dd,
-    d,
-    "EVEN GRANDER THAN\nMARDI GRAS", dd,
-    d,
-    "& THERE WILL BE", d,
-    d,
-    "NO REASON TO SLEEP", dd,
-    d,
-    "B/C THERE WILL BE", d,
-    d,
-    "NO NEED TO WORK", dd,
-    d,
-    "& THERE WILL BE", d,
-    d,
-    "SUCH A\nREVELATORY PALLOR", dd,
-    d,
-    "TO THE WHOLE THING", d,
-    d,
-    "THE PHOTOS WILL BE", d,
-    d,
-    "EXQUISITE", dd,
-    d,
-    "& THE LIBATIONS\n& SNACKS", d,
-    d,
-    "FUCKING DELICIOUS", dd,
-    d,
-    "THERE WILL BE A", d,
-    d,
-    "GIANT DANCE PARTY", d,
-    d,
-    "& CLUB CHAI WILL DJ", d,
-    d,
-    "& IT WILL BE AT\nTHE STUD", d,
-    d,
-    "& WE'LL ALL FUCKING DANCE", dd,
-    d,
-    "UNTIL WE SWEAT", d,
-    d,
-    "HARD", d,
-    d,
-    "& MAKEUP RUNS", d,
-    d,
-    "BETWEEN FACES", d,
-    dd,
-    "A TRANSFERENCE", dd,
-    dd,
-    "A TRANSFUSION OF GLAM", dd,
-    dd,
-    "A FUSION OF\nSWEATING BODIES", d,
-    d,
-    "INTO A WHATEVER", d,
-    d,
-    "SINGULARITY", dd,
-    d,
-    "A TRANSFUSION OUT OF A", d,
-    d,
-    "FUCKING OPPRESSED", d,
-    d,
-    "MISERABLE EXISTENCE",
-    d,
-    { pos: [0, 80] }, "INTO A REVELRY", d,
-    d,
-    "A FULL BLOWN", d,
-    d,
-    "REVELRY OF\nQUEERNESS & DESIRE", dd,
-    d,
-    "THAT WE HAVE ONLY NOW", dd,
-    dd,
-    "JUST BARELY BEGUN\nTO IMAGINE", dd,
-    dd,
-    "JUST BARELY\nBEGUN TO IMAGINE", dd,
-    dd,
-    "JUST BARELY BEGUN\nTO IMAGINE", ddd,
-    ddd,
-    "THE END", dd,
-    ddd,
-    "Text:\nIntroduction to 'Villainy'\nby Andrea Abi-Karam", ddd,
-    dd,
-    "Programmed by\nNathan Whitehead", ddd,
-    dd,
-    "Music:\nSympathetic Resonance\nby As Seas Exhale", ddd,
-    dd,
+    // dd,
+    // { uBrightness: 0.1 },
+    // 'THE END OF FASCISM', dd,
+    // d,
+    // 'LOOKS LIKE', dd,
+    // d,
+    // 'CENTURIES OF QUEERS', dd,
+    // d,
+    // { uBrightness: 0.5 },
+    // { uColor: 0.5 },
+    // 'DANCING ON THE GRAVE OF', dd,
+    // d,
+    // { uBrightness: 0.8 },
+    // "1. CAPITALISM", dd,
+    // d,
+    // "2. THE STATE", dd,
+    // d,
+    // { uBrightness: 1 },
+    // "3. COLONIALISM", dd,
+    // d,
+    // "4. NAZIS", dd,
+    // d,
+    // "5. RACISM", dd,
+    // d,
+    // "6. OPPRESSION", dd,
+    // ddd,
+    // "IT WILL BE A GRAND PARTY", dd,
+    // d,
+    // "EVEN GRANDER THAN\nMARDI GRAS", dd,
+    // d,
+    // "& THERE WILL BE", d,
+    // d,
+    // "NO REASON TO SLEEP", dd,
+    // d,
+    // "B/C THERE WILL BE", d,
+    // d,
+    // "NO NEED TO WORK", dd,
+    // d,
+    // "& THERE WILL BE", d,
+    // d,
+    // "SUCH A\nREVELATORY PALLOR", dd,
+    // d,
+    // "TO THE WHOLE THING", d,
+    // d,
+    // "THE PHOTOS WILL BE", d,
+    // d,
+    // "EXQUISITE", dd,
+    // d,
+    // "& THE LIBATIONS\n& SNACKS", d,
+    // d,
+    // "FUCKING DELICIOUS", dd,
+    // d,
+    // "THERE WILL BE A", d,
+    // d,
+    // "GIANT DANCE PARTY", d,
+    // d,
+    // "& CLUB CHAI WILL DJ", d,
+    // d,
+    // "& IT WILL BE AT\nTHE STUD", d,
+    // d,
+    // "& WE'LL ALL FUCKING DANCE", dd,
+    // d,
+    // "UNTIL WE SWEAT", d,
+    // d,
+    // "HARD", d,
+    // d,
+    // "& MAKEUP RUNS", d,
+    // d,
+    // "BETWEEN FACES", d,
+    // dd,
+    // "A TRANSFERENCE", dd,
+    // dd,
+    // "A TRANSFUSION OF GLAM", dd,
+    // dd,
+    // "A FUSION OF\nSWEATING BODIES", d,
+    // d,
+    // "INTO A WHATEVER", d,
+    // d,
+    // "SINGULARITY", dd,
+    // d,
+    // "A TRANSFUSION OUT OF A", d,
+    // d,
+    // "FUCKING OPPRESSED", d,
+    // d,
+    // "MISERABLE EXISTENCE",
+    // d,
+    // { pos: [0, 80] }, "INTO A REVELRY", d,
+    // d,
+    // "A FULL BLOWN", d,
+    // d,
+    // "REVELRY OF\nQUEERNESS & DESIRE", dd,
+    // d,
+    // "THAT WE HAVE ONLY NOW", dd,
+    // dd,
+    // "JUST BARELY BEGUN\nTO IMAGINE", dd,
+    // dd,
+    // "JUST BARELY\nBEGUN TO IMAGINE", dd,
+    // dd,
+    // "JUST BARELY BEGUN\nTO IMAGINE", ddd,
+    // ddd,
+    // "THE END", dd,
+    // ddd,
+    // "Text:\nIntroduction to 'Villainy'\nby Andrea Abi-Karam", ddd,
+    // dd,
+    // "Programmed by\nNathan Whitehead", ddd,
+    // dd,
+    // "Music:\nSympathetic Resonance\nby As Seas Exhale", ddd,
+    // dd,
 ];
 
 function compile(msgs) {
@@ -279,6 +326,7 @@ function init() {
         uRotateSpeed: new SmoothVar(0),
         uForwardSpeed: new SmoothVar(0),
         uDetail: new SmoothVar(0.3),
+        uColorTilt: new Smooth4Var([1, 0, 2, 0]),
     };
     renderState.qs.uniform1f("uColor", () => renderState.vars.uColor.value);
     renderState.qs.uniform1f("uBrightness", () => renderState.vars.uBrightness.value);
@@ -287,6 +335,7 @@ function init() {
     renderState.qs.uniform1f("uRotateSpeed", () => renderState.vars.uRotateSpeed.value);
     renderState.qs.uniform1f("uForwardSpeed", () => renderState.vars.uForwardSpeed.value);
     renderState.qs.uniform1f("uDetail", () => renderState.vars.uDetail.value);
+    renderState.qs.uniform4f("uColorTilt", () => renderState.vars.uColorTilt.value);
 }
 
 let cached = false;
@@ -308,7 +357,12 @@ function draw() {
         if (shouldUpdate) {
             // evt is a variable update event
             for (const [key, value] of Object.entries(evt.update)) {
-                renderState.vars[key].value = value;
+                if (t === 0) {
+                    // Snap to value instantly to get setup
+                    renderState.vars[key].setInstant(value);
+                } else {
+                    renderState.vars[key].value = value;
+                }
             }
         }
         if (shouldRender && evt.msg !== undefined) {
