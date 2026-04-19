@@ -1,19 +1,82 @@
 import { MRG32k3a } from './prng.js';
 import { perlin3 } from './perlin.js';
-import { animate, getComputedStylePropRGBA } from './quad-shader.js';
+import { animate } from './quad-shader.js';
 
-const FRAGMENT_SHADER = `
-precision lowp float;
-varying vec2 vPosition;
+const FRAGMENT_SHADER = `#version 300 es
+precision mediump float;
+in vec2 vPosition;
 uniform vec4 uColor;
 uniform float uTime;
+out vec4 fragColor;
+
+// void main()
+// {
+//     fragColor = vec4(0.0);
+//     vec4 c = vec4(0.0);
+//     vec3 p;
+//     float z = 0.0;
+//     float d;
+//     vec4 xyvec = vec4(0, 33, 11, 0);
+//     vec4 cxyvec = vec4(1, 3, 5, 0);
+//     float color_speed = 1.0; // -5 to 5, 0 ok
+//     float rotate_speed = 0.0; // -10 to 10, 0 ok
+//     float forward_speed = 1.0; // -30 to 30, 0 ok
+//     float color_push = 1.2; // 0.0 to 10.0 (bw to oversat)
+//     float color_spread = 0.33; // 0.0 to 5.0 (single color to too many colors)
+//     float detail = 1.5;
+//     float detail_level = 0.3;
+//     float steps = 100.0 * detail;
+//     float twist = 0.122;
+//     vec2 pd;
+//     for(float i; i < steps; i++)
+//     {
+//         p = z * normalize(gl_FragCoord.rgb * 2.0 - vec3(u_resolution, 1.0).xyy);
+//         p.z -= u_time * forward_speed;
+//         p.xy *= mat2(cos(-z * twist + u_time * rotate_speed * 0.1 + xyvec));
+//         pd = cos(p + cos(p.yzx + p.z - u_time * rotate_speed * 0.2)).xy;
+//         d = length(pd) / 6.0;
+//         z += d * detail_level;
+//         c += (color_push * sin(p.z * color_spread + u_time * color_speed + cxyvec) + 1.0) / d;
+//     }
+//     //fragColor = vec4(1.0, 1.0, 1.0, 1.0) - tanh(c * c * 0.0000001);
+//     fragColor = tanh(c * c * 0.0000001);
+// }
+
+
 void main() {
-    float theta = atan(vPosition.y, vPosition.x);
-    float rho = length(vPosition.xy);
-    float v = mod(rho - uTime/10., .2);
-    float alpha = smoothstep(.1, .2, v);
-    alpha *= (1. - smoothstep(0., 1., rho));
-    gl_FragColor = alpha * uColor;
+    // vPosition.xy is in [-1..1]
+
+    vec4 c = vec4(0.0);
+    vec3 p;
+    float z = 0.0;
+    float d;
+    vec4 xyvec = vec4(0, 33, 11, 0);
+    vec4 cxyvec = vec4(1, 3, 5, 0);
+    float color_speed = 1.0; // -5 to 5, 0 ok
+    float rotate_speed = 0.0; // -10 to 10, 0 ok
+    float forward_speed = 1.0; // -30 to 30, 0 ok
+    float color_push = 1.2; // 0.0 to 10.0 (bw to oversat)
+    float color_spread = 0.33; // 0.0 to 5.0 (single color to too many colors)
+    float detail = 1.5;
+    float detail_level = 0.3;
+    int steps = 150; //int(100.0 * detail);
+    float twist = 0.122;
+    vec2 pd;
+    float u_time = uTime;
+    for(int i = 0; i < /* steps */150; i++)
+    {
+        vec3 coord = vec3(vPosition.x, vPosition.y, -1.0);
+        vec3 ncoord = normalize(coord);
+
+        p = z * ncoord;
+        p.z -= u_time * forward_speed;
+        p.xy *= mat2(cos(-z * twist + u_time * rotate_speed * 0.1 + xyvec));
+        pd = cos(p + cos(p.yzx + p.z - u_time * rotate_speed * 0.2)).xy;
+        d = length(pd) / 6.0;
+        z += d * detail_level;
+        c += (color_push * sin(p.z * color_spread + u_time * color_speed + cxyvec) + 1.0) / d;
+    }
+    fragColor = tanh(c * c * 0.0000001);
 }
 `;
 
