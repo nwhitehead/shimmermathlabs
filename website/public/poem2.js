@@ -1,5 +1,3 @@
-import { MRG32k3a } from './prng.js';
-import { perlin3 } from './perlin.js';
 import { animate } from './quad-shader.js';
 
 const FRAGMENT_SHADER = `#version 300 es
@@ -49,22 +47,6 @@ void main() {
 const SCREEN_W = 1280;
 const SCREEN_H = 720;
 
-const SEED = 1234;
-const NUM_PETALS = 100;
-const CURTAIN_SPEED = 0.2;
-
-const prng = MRG32k3a(SEED);
-
-function uniform(low, high) {
-    return prng() * (high - low) + low;
-}
-
-function newImage(src) {
-    let result = new Image();
-    result.src = src;
-    return result;
-}
-
 class SmoothVar {
     constructor(initValue, speed) {
         this.x = initValue;
@@ -87,6 +69,7 @@ let renderState = {
     lastTime: 0,
     text: [],
     ctx: null,
+    qs: null,
 };
 
 const fonts = [
@@ -239,7 +222,6 @@ function compile(msgs) {
 const events = compile(msgs);
 console.log(events);
 
-const TIME_SCALE = 2.0;
 const FADEIN_TIME = 0.5;
 const FADEOUT_TIME = 0.5;
 
@@ -256,71 +238,8 @@ function main(init, draw) {
     f();
 }
 
-function drawRotScale(ctx, img, rot, scale, x, y) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.scale(scale, scale);
-    ctx.rotate(rot);
-    // Fade to nothing at bottom of screen
-    const a = y / SCREEN_H;
-    ctx.globalAlpha = 1 - a * a * a * a;
-    ctx.drawImage(img, -img.width * 0.5, -img.height * 0.5);
-    ctx.restore();
-}
-
 function init() {
-}
-
-//
-// creates a shader of the given type, uploads the source and
-// compiles it.
-//
-function loadShader(gl, type, source) {
-    const shader = gl.createShader(type);
-    // Send the source to the shader object
-    gl.shaderSource(shader, source);
-    // Compile the shader program
-    gl.compileShader(shader);
-    // See if it compiled successfully
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        alert(
-            `An error occurred compiling the shaders: ${gl.getShaderInfoLog(shader)}`
-        );
-        gl.deleteShader(shader);
-        return null;
-    }
-    return shader;
-}
-
-//
-// Initialize a shader program, so WebGL knows how to draw our data
-//
-function initShaderProgram(gl, vsSource, fsSource) {
-    const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
-    const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
-    // Create the shader program
-    const shaderProgram = gl.createProgram();
-    gl.attachShader(shaderProgram, vertexShader);
-    gl.attachShader(shaderProgram, fragmentShader);
-    gl.linkProgram(shaderProgram);
-    // If creating the shader program failed, alert
-    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-        alert(
-            `Unable to initialize the shader program: ${gl.getProgramInfoLog(
-                shaderProgram
-            )}`
-        );
-        return null;
-    }
-    return shaderProgram;
-}
-
-function flow(x, y, z) {
-    const eps = 1e-4;
-    const v0 = perlin3(x, y, z);
-    const vy = perlin3(x + eps, y, z) - v0;
-    const vx = -(perlin3(x, y + eps, z) - v0);
-    return { vx, vy };
+    renderState.qs.uniform4f("uColor", () => [1.0, 1.0, 0.0, 1.0]);
 }
 
 let cached = false;
@@ -340,10 +259,10 @@ function draw() {
                 ctx.globalAlpha = 0.5;
             } else if (t > evt.t && t < evt.t + FADEIN_TIME) {
                 const x = (t - evt.t) / FADEIN_TIME;
-                ctx.globalAlpha = Math.max(x, 0.0);
+                ctx.globalAlpha = x;
             } else if (t > evt.t + evt.keep && t <= evt.t + evt.keep + FADEOUT_TIME) {
                 const x = (t - evt.t - evt.keep) / FADEOUT_TIME;
-                ctx.globalAlpha = Math.min(1 - x, 0);
+                ctx.globalAlpha = 1 - x;
             }
             const f = fonts[evt.font];
             ctx.font = f;
@@ -398,9 +317,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         const music = document.getElementById('bgmusic');
         music.volume = 0.3;
         music.play();
-
         const qs = animate(glcanvas, FRAGMENT_SHADER);
-        qs.uniform4f("uColor", () => [1.0, 1.0, 0.0, 1.0]);
+        renderState.qs = qs;
 
         main(init, draw);
     });
