@@ -1,10 +1,16 @@
 import { animate } from './quad-shader.js';
 
 const FRAGMENT_SHADER = `#version 300 es
+
 precision mediump float;
+
 in vec2 vPosition;
-uniform vec4 uColor;
-uniform float uTime;
+
+uniform vec4 uColor; // test
+uniform float uTime; // time
+
+uniform float uColorPush;  // 0.0 to 10.0 (bw to oversat)
+
 out vec4 fragColor;
 
 void main() {
@@ -19,7 +25,6 @@ void main() {
     float color_speed = 1.0; // -5 to 5, 0 ok
     float rotate_speed = 0.0; // -10 to 10, 0 ok
     float forward_speed = 1.0; // -30 to 30, 0 ok
-    float color_push = 0.0; // 0.0 to 10.0 (bw to oversat)
     float color_spread = 0.33; // 0.0 to 5.0 (single color to too many colors)
     float detail = 1.5;
     float detail_level = 0.3;
@@ -38,10 +43,10 @@ void main() {
         pd = cos(p + cos(p.yzx + p.z - u_time * rotate_speed * 0.2)).xy;
         d = length(pd) / 6.0;
         z += d * detail_level;
-        c += (color_push * sin(p.z * color_spread + u_time * color_speed + cxyvec) + 1.0) / d;
+        c += (uColorPush * sin(p.z * color_spread + u_time * color_speed + cxyvec) + 1.0) / d;
     }
-    //fragColor = tanh(c * c * 0.0000001);
-    fragColor = uColor;
+    fragColor = tanh(c * c * 0.0000001);
+    //fragColor = uColor;
 }
 `;
 
@@ -95,7 +100,7 @@ const ddd = 7.0;
 
 const msgs = [
     dd,
-    { uColor: [1,0,0,1] },
+    { uColorPush: 0.5 },
     'THE END OF FASCISM', dd,
     d,
     { x: 1 },
@@ -257,9 +262,11 @@ function main(init, draw) {
 function init() {
     renderState.vars = {
         uColor: new BasicVar([1.0, 1.0, 0.0, 1.0]),
+        uColorPush: new SmoothVar(0.0),
         x: new SmoothVar(0.0),
     };
     renderState.qs.uniform4f("uColor", () => renderState.vars.uColor.value);
+    renderState.qs.uniform1f("uColorPush", () => renderState.vars.uColorPush.value);
 }
 
 let cached = false;
