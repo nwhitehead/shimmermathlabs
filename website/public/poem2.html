@@ -54,6 +54,19 @@ button:hover {
     <div class="fullscreen">
         <button id="play">Play</button>
     </div>
+
+    <script id="vertexShader" type="x-shader/x-vertex">
+void main() {
+    gl_Position = vec4(position.x, position.y, position.z, 1.0);
+}
+    </script>
+
+    <script id="fragmentShader" type="x-shader/x-fragment">
+void main() {
+    gl_FragColor = vec4(0.0, 0.58, 0.86, 1.0);
+}
+    </script>
+
     <script type="module" src="poem2.js"></script>
 </body>
 </html>

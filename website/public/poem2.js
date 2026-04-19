@@ -178,7 +178,8 @@ const FADEIN_TIME = 0.5;
 const FADEOUT_TIME = 0.5;
 
 function main(init, draw) {
-    renderState.ctx = document.getElementById('canvas').getContext('2d');
+    //renderState.ctx = document.getElementById('canvas').getContext('2d');
+    renderState.gctx = document.getElementById('canvas').getContext('webgl');
     renderState.startTime = Date.now();
 
     init();
@@ -203,6 +204,8 @@ function drawRotScale(ctx, img, rot, scale, x, y) {
 }
 
 function init() {
+    const vertexTxt = document.getElementById("vertexShader").textContent;
+    console.log('vertex', vertexTxt);
 }
 
 function flow(x, y, z) {
@@ -215,6 +218,11 @@ function flow(x, y, z) {
 
 function draw() {
     renderState.time = (Date.now() - renderState.startTime) * 0.001;
+    let gl = renderState.gctx;
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    return;
+
     let ctx = renderState.ctx;
     ctx.fillStyle = "#eee";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -289,7 +297,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         canvas.id = 'canvas';
         canvas.width = SCREEN_W;
         canvas.height = SCREEN_H;
+        canvas.style.position = "fixed";
+        canvas.style.left = 0;
+        canvas.style.top = 0;
+        const glcanvas = canvas.cloneNode();
+        glcanvas.id = 'glcanvas';
         button.replaceWith(canvas);
+        canvas.parentNode.appendChild(glcanvas);
         const music = document.getElementById('bgmusic');
         music.volume = 0.3;
         music.play();
