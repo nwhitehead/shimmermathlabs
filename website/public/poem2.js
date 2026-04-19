@@ -9,40 +9,6 @@ uniform vec4 uColor;
 uniform float uTime;
 out vec4 fragColor;
 
-// void main()
-// {
-//     fragColor = vec4(0.0);
-//     vec4 c = vec4(0.0);
-//     vec3 p;
-//     float z = 0.0;
-//     float d;
-//     vec4 xyvec = vec4(0, 33, 11, 0);
-//     vec4 cxyvec = vec4(1, 3, 5, 0);
-//     float color_speed = 1.0; // -5 to 5, 0 ok
-//     float rotate_speed = 0.0; // -10 to 10, 0 ok
-//     float forward_speed = 1.0; // -30 to 30, 0 ok
-//     float color_push = 1.2; // 0.0 to 10.0 (bw to oversat)
-//     float color_spread = 0.33; // 0.0 to 5.0 (single color to too many colors)
-//     float detail = 1.5;
-//     float detail_level = 0.3;
-//     float steps = 100.0 * detail;
-//     float twist = 0.122;
-//     vec2 pd;
-//     for(float i; i < steps; i++)
-//     {
-//         p = z * normalize(gl_FragCoord.rgb * 2.0 - vec3(u_resolution, 1.0).xyy);
-//         p.z -= u_time * forward_speed;
-//         p.xy *= mat2(cos(-z * twist + u_time * rotate_speed * 0.1 + xyvec));
-//         pd = cos(p + cos(p.yzx + p.z - u_time * rotate_speed * 0.2)).xy;
-//         d = length(pd) / 6.0;
-//         z += d * detail_level;
-//         c += (color_push * sin(p.z * color_spread + u_time * color_speed + cxyvec) + 1.0) / d;
-//     }
-//     //fragColor = vec4(1.0, 1.0, 1.0, 1.0) - tanh(c * c * 0.0000001);
-//     fragColor = tanh(c * c * 0.0000001);
-// }
-
-
 void main() {
     // vPosition.xy is in [-1..1]
 
@@ -55,11 +21,11 @@ void main() {
     float color_speed = 1.0; // -5 to 5, 0 ok
     float rotate_speed = 0.0; // -10 to 10, 0 ok
     float forward_speed = 1.0; // -30 to 30, 0 ok
-    float color_push = 1.2; // 0.0 to 10.0 (bw to oversat)
+    float color_push = 0.0; // 0.0 to 10.0 (bw to oversat)
     float color_spread = 0.33; // 0.0 to 5.0 (single color to too many colors)
     float detail = 1.5;
     float detail_level = 0.3;
-    int steps = 150; //int(100.0 * detail);
+    int steps = 150;
     float twist = 0.122;
     vec2 pd;
     float u_time = uTime;
@@ -99,12 +65,28 @@ function newImage(src) {
     return result;
 }
 
+class SmoothVar {
+    constructor(initValue, speed) {
+        this.x = initValue;
+        this.goalValue = initValue;
+        this.speed = speed ?? 0.01;
+    }
+    get value() {
+        return this.x;
+    }
+    set value(newValue) {
+        this.goalValue = newValue;
+    }
+    update() {
+        this.x = this.x + (this.goalValue - this.x) * this.speed;
+    }
+}
+
 let renderState = {
     time: 0,
-    curtain: 1,
-    curtainGoal: 1,
     lastTime: 0,
     text: [],
+    ctx: null,
 };
 
 const fonts = [
@@ -226,7 +208,6 @@ function compile(msgs) {
     let font = 0;
     let align = 'center';
     let pos = [0, 0];
-    let curtain = 1;
     for (const msg of msgs) {
         if (typeof msg === 'number') {
             t += msg;
@@ -238,12 +219,11 @@ function compile(msgs) {
             }
         } else if (typeof msg === 'string') {
             result.push({
-                t, msg, font, pos, align, pos, curtain, keep: 0,
+                t, msg, font, pos, align, pos, keep: 0,
             });
             pos = [0, 0];
         } else {
             if (msg.pos !== undefined) pos = msg.pos;
-            if (msg.curtain !== undefined) curtain = msg.curtain;
         }
     }
     return result;
@@ -258,7 +238,6 @@ const FADEOUT_TIME = 0.5;
 
 function main(init, draw) {
     renderState.ctx = document.getElementById('canvas').getContext('2d');
-    renderState.gctx = document.getElementById('glcanvas').getContext('webgl');
     renderState.startTime = Date.now();
 
     init();
@@ -339,9 +318,6 @@ function flow(x, y, z) {
 
 function draw() {
     renderState.time = (Date.now() - renderState.startTime) * 0.001;
-    let gl = renderState.gctx;
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
 
     let ctx = renderState.ctx;
     ctx.clearRect(0, 0, SCREEN_W, SCREEN_H);
@@ -350,7 +326,6 @@ function draw() {
     for (const evt of events) {
         if (t > evt.t && t <= evt.t + evt.keep + FADEOUT_TIME) {
             ctx.save();
-            renderState.curtainGoal = evt.curtain;
             if (t > evt.t && t < evt.t + FADEIN_TIME) {
                 const x = (t - evt.t) / FADEIN_TIME;
                 ctx.globalAlpha = x;
@@ -388,28 +363,7 @@ function draw() {
             ctx.restore();
         }
     }
-    // Show abyss
-    ctx.save();
-    ctx.globalCompositeOperation = 'difference';
-    ctx.fillStyle = '#fff';
-    let region = new Path2D();
-    region.moveTo(0, SCREEN_H);
-    region.lineTo(SCREEN_W, SCREEN_H * renderState.curtain);
-    region.lineTo(SCREEN_W, SCREEN_H);
-    region.closePath();
-    ctx.fill(region);
 
-    //ctx.fillRect(0, SCREEN_H * renderState.curtain, SCREEN_W, SCREEN_H);
-    ctx.restore();
-    // Update curtain
-    const deltaT = renderState.time - renderState.lastTime;
-    if (deltaT > 0) {
-        let deltaCurtain = (renderState.curtainGoal - renderState.curtain) * 0.05;
-        if (Math.abs(deltaCurtain) > Math.abs(CURTAIN_SPEED * deltaT)) {
-            deltaCurtain = Math.sign(deltaCurtain) * CURTAIN_SPEED * deltaT;
-        }
-        renderState.curtain += deltaCurtain;
-    }
     renderState.lastTime = renderState.time;
 }
 
