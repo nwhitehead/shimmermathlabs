@@ -228,8 +228,6 @@ function draw() {
 
     let ctx = renderState.ctx;
     ctx.clearRect(0, 0, SCREEN_W, SCREEN_H);
-    return;
-    ctx.fillStyle = "#000";
     const t = renderState.time;
     // Draw text
     for (const evt of events) {
@@ -261,6 +259,11 @@ function draw() {
                 const line = lines[idx];
                 let center_dx = (maxW - measures[idx].width) / 2;
                 // align left
+                ctx.strokeStyle = "#fff";
+                ctx.lineWidth = 20.0;
+                ctx.lineJoin = 'round';
+                ctx.strokeText(line, x + center_dx, y);
+                ctx.fillStyle = "#000";
                 ctx.fillText(line, x + center_dx, y);
                 // align center
                 y += ascent;
