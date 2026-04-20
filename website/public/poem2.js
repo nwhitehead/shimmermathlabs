@@ -15,8 +15,11 @@ uniform float uColorSpread; // 0.0 to 5.0 (single color to too many colors)
 uniform float uRotateSpeed; // -10 to 10, 0 ok
 uniform float uForwardSpeed; // -30 to 30, 0 ok
 uniform float uDetail; // 0.3 is normal
-uniform float uZOffset;
 uniform vec4 uColorTilt; // chooses palette of random colors
+
+// Offsets are for smoothing changing speeds without flickering
+uniform float uZOffset;
+uniform float uColorSpreadOffset;
 
 
 out vec4 fragColor;
@@ -43,7 +46,7 @@ void main() {
         pd = cos(p + cos(p.yzx + p.z - uTime * uRotateSpeed * 0.2)).xy;
         d = length(pd) / 6.0;
         z += d * uDetail;
-        c += (uColor * sin(p.z * uColorSpread + uTime * uColorSpeed + uColorTilt) + 1.0) / d;
+        c += (uColor * sin(p.z * uColorSpread + uTime * uColorSpeed + uColorSpreadOffset + uColorTilt) + 1.0) / d;
     }
     fragColor = vec4((tanh((c / 1000.0) * (c / 1000.0) * 0.1) * uBrightness).rgb, 1.0);
 }
@@ -309,6 +312,7 @@ function init() {
     renderState.vars = {
         uZOffset: 0,
         uForwardSpeed: 0,
+        uColorSpreadOffset: 0,
     };
     renderState.qs.uniform1f("uBrightness", () => interp(renderState.knobs[0], 0.0, 2.0, (y) => y * y));
     renderState.qs.uniform1f("uColor", () => interp(renderState.knobs[1], 0.0, 2.0));
@@ -317,7 +321,7 @@ function init() {
     renderState.qs.uniform1f("uDetail", () => interp(renderState.knobs[3], 0.1, 3.0, (y) => y * y));
     // renderState.qs.uniform1f("uRotateSpeed", () => renderState.vars.uRotateSpeed.value);
     renderState.qs.uniform1f("uForwardSpeed", () => {
-        let v = interp(renderState.knobs[4], -30, 30.0);
+        let v = interp(renderState.knobs[4], -30, 30, (y) => ((y * 2 - 1) * (y * 2 - 1) * (y * 2 - 1) + 1) / 2);
         if (v !== renderState.vars.uForwardSpeed) {
             const t = renderState.qs.time;
             // correct offset for changing speed
@@ -329,6 +333,7 @@ function init() {
     });
     renderState.qs.uniform4f("uColorTilt", [1, 2, 5, 0]);
     renderState.qs.uniform1f("uZOffset", () => renderState.vars.uZOffset);
+    renderState.qs.uniform1f("uColorSpreadOffset", () => renderState.vars.uColorSpreadOffset);
 }
 
 let cached = false;
