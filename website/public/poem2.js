@@ -174,13 +174,13 @@ const msgs = [
     "THERE WILL BE A", d,
     d,
     "GIANT DANCE PARTY", d,
-    { rotate: 64 + 60 },
+    { rotate: 64 + 50 },
     d,
     "& CLUB CHAI WILL DJ", d,
     d,
     "& IT WILL BE AT\nTHE STUD", d,
     d,
-    { rotate: 64 - 60 },
+    { rotate: 64 - 50 },
     "& WE'LL ALL FUCKING DANCE", dd,
     d,
     "UNTIL WE SWEAT", d,
@@ -426,7 +426,7 @@ function draw() {
             const measures = lines.map((txt) => ctx.measureText(txt));
             let maxW = 0;
             let sumH = 0;
-            let ascent = measures[0].fontBoundingBoxAscent;
+            let ascent = measures[0].fontBoundingBoxAscent * 1.25;
             for (const m of measures) {
                 maxW = Math.max(maxW, m.width);
                 sumH += ascent;
@@ -438,7 +438,7 @@ function draw() {
                 let center_dx = (maxW - measures[idx].width) / 2;
                 // align left
                 ctx.strokeStyle = "#000";
-                ctx.lineWidth = 20.0;
+                ctx.lineWidth = 40.0;
                 ctx.lineJoin = 'round';
                 ctx.strokeText(line, x + center_dx, y);
                 ctx.fillStyle = "#fff";
@@ -454,51 +454,8 @@ function draw() {
     renderState.lastTime = renderState.time;
 }
 
-function listInputsAndOutputs(midiAccess) {
-  for (const entry of midiAccess.inputs) {
-    const input = entry[1];
-    console.log(
-      `Input port [type:'${input.type}']` +
-        ` id:'${input.id}'` +
-        ` manufacturer:'${input.manufacturer}'` +
-        ` name:'${input.name}'` +
-        ` version:'${input.version}'`,
-    );
-  }
-
-  for (const entry of midiAccess.outputs) {
-    const output = entry[1];
-    console.log(
-      `Output port [type:'${output.type}'] id:'${output.id}' manufacturer:'${output.manufacturer}' name:'${output.name}' version:'${output.version}'`,
-    );
-  }
-}
-
-function onMIDIMessage(event) {
-    if (event.data[0] === 0xf8) {
-        return;
-    }
-    if (event.data[0] === 0xb0) {
-        const controller = event.data[1];
-        if (controller >= 0x15 && controller <= 0x1c) {
-            const idx = controller - 0x15;
-            renderState.knobs[idx] = event.data[2];
-            console.log(renderState.knobs);
-        }
-    }
-}
-
-function startLoggingMIDIInput(midiAccess) {
-    midiAccess.inputs.forEach((entry) => {
-        entry.onmidimessage = onMIDIMessage;
-    });
-}
-
 document.addEventListener("DOMContentLoaded", async () => {
     const button = document.getElementById('play');
-    const midiaccess = await navigator.requestMIDIAccess();
-    listInputsAndOutputs(midiaccess);
-    startLoggingMIDIInput(midiaccess);
 
     button.addEventListener('click', () => {
         const canvas = document.createElement('canvas');
