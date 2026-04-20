@@ -341,7 +341,7 @@ function init() {
         return v;
     });
     renderState.qs.uniform1f("uRotateSpeed", () => {
-        let v = interp(renderState.knobs[5], -30.0, 30.0) - renderState.vars.uForwardSpeed;
+        let v = interp(renderState.knobs[5], -30.0, 30.0, (y) => ((y * 2 - 1) * (y * 2 - 1) * (y * 2 - 1) + 1) / 2) - renderState.vars.uForwardSpeed;
         if (v !== renderState.vars.uRotateSpeed) {
             const t = renderState.qs.time;
             // correct offset for changing speed
@@ -351,7 +351,13 @@ function init() {
         return v;
     });
 
-    renderState.qs.uniform4f("uColorTilt", [1, 2, 5, 0]);
+    renderState.qs.uniform4f("uColorTilt", () => {
+        return [
+            1,
+            interp(renderState.knobs[6], 0, 5), 
+            5,
+            0];
+    });
     renderState.qs.uniform1f("uZOffset", () => renderState.vars.uZOffset);
     renderState.qs.uniform1f("uColorSpreadOffset", () => renderState.vars.uColorSpreadOffset);
     renderState.qs.uniform1f("uRotateOffset", () => renderState.vars.uRotateOffset);
