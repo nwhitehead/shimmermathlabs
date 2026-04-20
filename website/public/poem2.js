@@ -126,7 +126,7 @@ let renderState = {
     text: [],
     ctx: null,
     qs: null,
-    knobs: (new Array(16)).fill(undefined),
+    knobs: (new Array(16)).fill(64),
 };
 
 const fonts = [
@@ -297,28 +297,27 @@ function main(init, draw) {
     f();
 }
 
+function interp(x, lo, hi, f) {
+    if (x === undefined) {
+        return lo;
+    }
+    let y = x / 127;
+    if (f !== undefined) {
+        y = f(y);
+    }
+    return lo + (hi - lo) * y;
+}
+
 function init() {
-    renderState.vars = {
-        uColor: new SmoothVar(1),
-        uBrightness: new SmoothVar(1),
-        uColorSpeed: new SmoothVar(1),
-        uColorSpread: new SmoothVar(0.33),
-        uRotateSpeed: new SmoothVar(0),
-        uForwardSpeed: new SmoothVar(0, 1.0),
-        uDetail: new SmoothVar(0.3),
-        uColorTilt: new Smooth4Var([1, 0, 2, 0]),
-        uZOffset: new BasicVar(0),
-    };
-    renderState.qs.uniform1f("uColor", () => renderState.vars.uColor.value);
-    renderState.qs.uniform1f("uBrightness", () => renderState.vars.uBrightness.value);
-    renderState.qs.uniform1f("uColorSpeed", () => renderState.vars.uColorSpeed.value);
-    renderState.qs.uniform1f("uColorSpread", () => renderState.vars.uColorSpread.value);
-    renderState.qs.uniform1f("uRotateSpeed", () => renderState.vars.uRotateSpeed.value);
-    renderState.qs.uniform1f("uForwardSpeed", () => renderState.vars.uForwardSpeed.value);
-    renderState.qs.uniform1f("uDetail", () => renderState.vars.uDetail.value);
-    renderState.qs.uniform4f("uColorTilt", () => renderState.vars.uColorTilt.value);
-    renderState.qs.uniform4f("uColorTilt", () => renderState.vars.uColorTilt.value);
-    renderState.qs.uniform1f("uZOffset", () => renderState.vars.uZOffset.value);
+    renderState.qs.uniform1f("uBrightness", () => interp(renderState.knobs[0], 0.0, 1.0));
+    renderState.qs.uniform1f("uColor", () => interp(renderState.knobs[1], 0.0, 1.0));
+    renderState.qs.uniform1f("uColorSpeed", 1);
+    renderState.qs.uniform1f("uColorSpread", () => interp(renderState.knobs[2], 0.0, 5.0, (y) => y * y * y));
+    renderState.qs.uniform1f("uDetail", () => interp(renderState.knobs[3], 0.1, 3.0, (y) => y * y));
+    // renderState.qs.uniform1f("uRotateSpeed", () => renderState.vars.uRotateSpeed.value);
+    // renderState.qs.uniform1f("uForwardSpeed", () => renderState.vars.uForwardSpeed.value);
+    renderState.qs.uniform4f("uColorTilt", [1, 2, 5, 0]);
+    // renderState.qs.uniform1f("uZOffset", () => renderState.vars.uZOffset.value);
 }
 
 let cached = false;
@@ -331,33 +330,21 @@ function draw() {
     const t = renderState.time;
     // Update smooth vars
     // Lock out rendering so we update all vars "simultaneously"
-    renderState.qs.shouldRender = false;
-    for (const [key, value] of Object.entries(renderState.vars)) {
-        value.update();
-        if (key === 'uForwardSpeed') {
-            if (value.prev !== value.value) {
-                const t = renderState.qs.time;
-                renderState.vars.uZOffset.value -= value.value * t - value.prev * t;
-            }
-        }
-    }
-    renderState.qs.shouldRender = true;
+    // renderState.qs.shouldRender = false;
+    // for (const [key, value] of Object.entries(renderState.vars)) {
+    //     value.update();
+    //     if (key === 'uForwardSpeed') {
+    //         if (value.prev !== value.value) {
+    //             const t = renderState.qs.time;
+    //             renderState.vars.uZOffset.value -= value.value * t - value.prev * t;
+    //         }
+    //     }
+    // }
+    // renderState.qs.shouldRender = true;
 
     // Process events
     for (const evt of events) {
         const shouldRender = cached === false || (t > evt.t && t <= evt.t + evt.keep + FADEOUT_TIME);
-        const shouldUpdate = (t >= evt.t && renderState.lastTime < evt.t) && evt.update !== undefined;
-        if (shouldUpdate) {
-            // evt is a variable update event
-            for (const [key, value] of Object.entries(evt.update)) {
-                if (t === 0) {
-                    // Snap to value instantly to get setup
-                    renderState.vars[key].setInstant(value);
-                } else {
-                    renderState.vars[key].value = value;
-                }
-            }
-        }
         if (shouldRender && evt.msg !== undefined) {
             ctx.save();
             if (cached === false) {
