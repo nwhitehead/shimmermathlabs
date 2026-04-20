@@ -296,7 +296,7 @@ const FADEOUT_TIME = 0.5;
 
 function main(init, draw) {
     renderState.ctx = document.getElementById('canvas').getContext('2d');
-    renderState.startTime = Date.now();
+    renderState.startTime = performance.now();
 
     init();
 
@@ -377,7 +377,8 @@ function init() {
 let cached = false;
 
 function draw() {
-    renderState.time = (Date.now() - renderState.startTime) * 0.001;
+    renderState.time += 1/60;//(performance.now() - renderState.startTime) * 0.001;
+    renderState.qs.time = renderState.time;
 
     let ctx = renderState.ctx;
     ctx.clearRect(0, 0, SCREEN_W, SCREEN_H);
@@ -474,8 +475,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         const music = document.getElementById('bgmusic');
         music.volume = 0.3;
         music.play();
-        const qs = animate(glcanvas, FRAGMENT_SHADER);
+        const qs = animate(glcanvas, FRAGMENT_SHADER, /* manualTime= */ true);
         renderState.qs = qs;
+        renderState.qs.time = 0;
 
         main(init, draw);
     });
