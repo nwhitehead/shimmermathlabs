@@ -86,7 +86,7 @@ let renderState = {
     ctx: null,
     qs: null,
     knobs: (new Array(16)).fill(64),
-    vars: {
+    svars: {
         brightness: new SmoothVar(0),
         color: new SmoothVar(0),
         spread: new SmoothVar(0),
@@ -115,93 +115,134 @@ const msgs = [
     { brightness: 60 },
     'CENTURIES OF QUEERS', dd,
     d,
+    { brightness: 80 },
     'DANCING ON THE GRAVE OF', dd,
     d,
+    { brightness: 100, color: 20 },
     "1. CAPITALISM", dd,
     d,
+    { brightness: 127 },
     "2. THE STATE", dd,
     d,
+    { color: 40 },
     "3. COLONIALISM", dd,
     d,
     "4. NAZIS", dd,
     d,
+    { color: 60, detail: 30 },
     "5. RACISM", dd,
     d,
     "6. OPPRESSION", dd,
     ddd,
+    { brightness: 127, color: 60, spread: 64, detail: 30, forward: 80, rotate: 64, tilt: 0 },
+    { detail: 40, forward: 86 },
     "IT WILL BE A GRAND PARTY", dd,
     d,
+    { tilt: 64 },
     "EVEN GRANDER THAN\nMARDI GRAS", dd,
     d,
     "& THERE WILL BE", d,
     d,
+    { forward: 90, tilt: 75 },
     "NO REASON TO SLEEP", dd,
     d,
     "B/C THERE WILL BE", d,
     d,
+    { detail: 50 },
     "NO NEED TO WORK", dd,
     d,
     "& THERE WILL BE", d,
     d,
+    { spread: 80 },
     "SUCH A\nREVELATORY PALLOR", dd,
     d,
+    { brightness: 127, color: 60, spread: 80, detail: 50, forward: 90, rotate: 64, tilt: 75 },
     "TO THE WHOLE THING", d,
     d,
     "THE PHOTOS WILL BE", d,
     d,
+    { spread: 30, forward: 64, detail: 90 },
     "EXQUISITE", dd,
+    { forward: 90, detail: 60, tilt: 0 },
     d,
+    { spread: 50 },
     "& THE LIBATIONS\n& SNACKS", d,
     d,
     "FUCKING DELICIOUS", dd,
     d,
+    { brightness: 127, color: 60, spread: 50, detail: 60, forward: 90, rotate: 64, tilt: 0 },
     "THERE WILL BE A", d,
     d,
     "GIANT DANCE PARTY", d,
+    { rotate: 64 + 60 },
     d,
     "& CLUB CHAI WILL DJ", d,
     d,
     "& IT WILL BE AT\nTHE STUD", d,
     d,
+    { rotate: 64 - 60 },
     "& WE'LL ALL FUCKING DANCE", dd,
     d,
     "UNTIL WE SWEAT", d,
     d,
+    { rotate: 64 },
+    { brightness: 127, color: 60, spread: 50, detail: 60, forward: 90, rotate: 64, tilt: 0 },
     "HARD", d,
     d,
+    { color: 80, detail: 40, spread: 80 },
     "& MAKEUP RUNS", d,
     d,
     "BETWEEN FACES", d,
     dd,
+    { forward: 80, tilt: 80 },
     "A TRANSFERENCE", dd,
     dd,
+    { color: 100, },
     "A TRANSFUSION OF GLAM", dd,
     dd,
+    { color: 110, forward: 70, tilt: 80 },
     "A FUSION OF\nSWEATING BODIES", d,
     d,
+    { color: 100, forward: 67, },
+    { brightness: 127, color: 100, spread: 80, detail: 60, forward: 67, rotate: 64, tilt: 80 },
     "INTO A WHATEVER", d,
     d,
+    { color: 64, forward: 64, detail: 127, rotate: 75, tilt: 127 },
     "SINGULARITY", dd,
     d,
+    { color: 50, forward: 40, detail: 64, rotate: 64 }, 
     "A TRANSFUSION OUT OF A", d,
     d,
+    { color: 40 }, 
     "FUCKING OPPRESSED", d,
     d,
+    { brightness: 100, color: 30 }, 
     "MISERABLE EXISTENCE",
     d,
+    { brightness: 100, color: 30, spread: 80, detail: 64, forward: 40, rotate: 64, tilt: 127 },
     { pos: [0, 80] }, "INTO A REVELRY", d,
     d,
     "A FULL BLOWN", d,
     d,
+    { tilt: 64, detail: 50 },
     "REVELRY OF\nQUEERNESS & DESIRE", dd,
     d,
     "THAT WE HAVE ONLY NOW", dd,
     dd,
+    { detail: 40, color: 15 },
     "JUST BARELY BEGUN\nTO IMAGINE", dd,
     dd,
+    { color: 10, detail: 30 },
     "JUST BARELY BEGUN\nTO IMAGINE", dd,
     dd,
-    "JUST", d, d, "BARELY BEGUN", d, d, "TO IMAGINE", ddd,
+    { color: 5, detail: 20, brightness: 80 },
+    "JUST", d,
+    d,
+    { color: 0, brightness: 60 },
+    "BARELY BEGUN", d,
+    d, 
+    { brightness: 40 },
+    "TO IMAGINE", ddd,
     ddd,
     "THE END", dd,
     ddd,
@@ -342,6 +383,18 @@ function draw() {
     ctx.clearRect(0, 0, SCREEN_W, SCREEN_H);
     const t = renderState.time;
 
+    // Update vars to knobs
+    renderState.knobs[0] = renderState.svars.brightness.value;
+    renderState.knobs[1] = renderState.svars.color.value;
+    renderState.knobs[2] = renderState.svars.spread.value;
+    renderState.knobs[3] = renderState.svars.detail.value;
+    renderState.knobs[4] = renderState.svars.forward.value;
+    renderState.knobs[5] = renderState.svars.rotate.value;
+    renderState.knobs[6] = renderState.svars.tilt.value;
+    for (const [key, value] of Object.entries(renderState.svars)) {
+        value.update();
+    }
+
     // Process events
     for (const evt of events) {
         const shouldRender = cached === false || (t > evt.t && t <= evt.t + evt.keep + FADEOUT_TIME);
@@ -349,22 +402,10 @@ function draw() {
         if (shouldUpdate) {
             // evt is a variable update event
             for (const [key, value] of Object.entries(evt.update)) {
-                if (key === 'brightness') {
-                    renderState.knobs[0] = value;
-                } else if (key === 'color') {
-                    renderState.knobs[1] = value;
-                } else if (key === 'spread') {
-                    renderState.knobs[2] = value;
-                } else if (key === 'detail') {
-                    renderState.knobs[3] = value;
-                } else if (key === 'forward') {
-                    renderState.knobs[4] = value;
-                } else if (key === 'rotate') {
-                    renderState.knobs[5] = value;
-                } else if (key === 'tilt') {
-                    renderState.knobs[6] = value;
+                if (t === 0) {
+                    renderState.svars[key].setInstant(value);
                 } else {
-                    console.log('MISSING', key, value);
+                    renderState.svars[key].value = value;
                 }
             }
         }
