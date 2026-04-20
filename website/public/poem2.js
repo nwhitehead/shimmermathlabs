@@ -20,6 +20,7 @@ uniform vec4 uColorTilt; // chooses palette of random colors
 // Offsets are for smoothing changing speeds without flickering
 uniform float uZOffset;
 uniform float uColorSpreadOffset;
+uniform float uRotateOffset;
 
 
 out vec4 fragColor;
@@ -42,8 +43,8 @@ void main() {
 
         p = z * ncoord;
         p.z -= uTime * uForwardSpeed + uZOffset;
-        p.xy *= mat2(cos(-z * twist + uTime * uRotateSpeed * 0.1 + xyvec));
-        pd = cos(p + cos(p.yzx + p.z - uTime * uRotateSpeed * 0.2)).xy;
+        p.xy *= mat2(cos(-z * twist + uTime * uRotateSpeed * 0.1 + uRotateOffset + xyvec));
+        pd = cos(p + cos(p.yzx + p.z - uTime * uRotateSpeed * 0.1 - uRotateOffset)).xy;
         d = length(pd) / 6.0;
         z += d * uDetail;
         c += (uColor * sin(p.z * uColorSpread + uTime * uColorSpeed + uColorSpreadOffset + uColorTilt) + 1.0) / d;
@@ -136,9 +137,7 @@ const d = 1.5;
 const dd = 3.0;
 const ddd = 7.0;
 
-
 const msgs = [
-
     dd,
     'THE END OF FASCISM', dd,
     d,
@@ -314,6 +313,7 @@ function init() {
         uForwardSpeed: 0,
         uColorSpread: 0,
         uColorSpreadOffset: 0,
+        uRotateOffset: 0,
     };
     renderState.qs.uniform1f("uBrightness", () => interp(renderState.knobs[0], 0.0, 2.0, (y) => y * y));
     renderState.qs.uniform1f("uColor", () => interp(renderState.knobs[1], 0.0, 2.0));
@@ -326,12 +326,10 @@ function init() {
             const pz0 = -(t * renderState.vars.uForwardSpeed + renderState.vars.uZOffset);
             renderState.vars.uColorSpreadOffset -= v * pz0 - (renderState.vars.uColorSpread ?? 0) * pz0;
             renderState.vars.uColorSpread = v;
-            console.log('t = ', t, ' pz0 = ', pz0, ' offset = ', renderState.vars.uColorSpreadOffset);
         }
         return v;
     });
     renderState.qs.uniform1f("uDetail", () => interp(renderState.knobs[3], 0.1, 3.0, (y) => y * y));
-    // renderState.qs.uniform1f("uRotateSpeed", () => renderState.vars.uRotateSpeed.value);
     renderState.qs.uniform1f("uForwardSpeed", () => {
         let v = interp(renderState.knobs[4], -30, 30, (y) => ((y * 2 - 1) * (y * 2 - 1) * (y * 2 - 1) + 1) / 2);
         if (v !== renderState.vars.uForwardSpeed) {
@@ -339,13 +337,24 @@ function init() {
             // correct offset for changing speed
             renderState.vars.uZOffset -= v * t - renderState.vars.uForwardSpeed * t;
             renderState.vars.uForwardSpeed = v;
-            console.log('t = ', t, ' speed = ', v, ' offset = ', renderState.vars.uZOffset);
         }
         return v;
     });
+    renderState.qs.uniform1f("uRotateSpeed", () => {
+        let v = interp(renderState.knobs[5], -30.0, 30.0) - renderState.vars.uForwardSpeed;
+        if (v !== renderState.vars.uRotateSpeed) {
+            const t = renderState.qs.time;
+            // correct offset for changing speed
+            renderState.vars.uRotateOffset -= v * t * 0.1 - (renderState.vars.uRotateSpeed ?? 0) * t * 0.1;
+            renderState.vars.uRotateSpeed = v;
+        }
+        return v;
+    });
+
     renderState.qs.uniform4f("uColorTilt", [1, 2, 5, 0]);
     renderState.qs.uniform1f("uZOffset", () => renderState.vars.uZOffset);
     renderState.qs.uniform1f("uColorSpreadOffset", () => renderState.vars.uColorSpreadOffset);
+    renderState.qs.uniform1f("uRotateOffset", () => renderState.vars.uRotateOffset);
 }
 
 let cached = false;
