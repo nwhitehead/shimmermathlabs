@@ -443,8 +443,49 @@ function draw() {
     renderState.lastTime = renderState.time;
 }
 
+function listInputsAndOutputs(midiAccess) {
+  for (const entry of midiAccess.inputs) {
+    const input = entry[1];
+    console.log(
+      `Input port [type:'${input.type}']` +
+        ` id:'${input.id}'` +
+        ` manufacturer:'${input.manufacturer}'` +
+        ` name:'${input.name}'` +
+        ` version:'${input.version}'`,
+    );
+  }
+
+  for (const entry of midiAccess.outputs) {
+    const output = entry[1];
+    console.log(
+      `Output port [type:'${output.type}'] id:'${output.id}' manufacturer:'${output.manufacturer}' name:'${output.name}' version:'${output.version}'`,
+    );
+  }
+}
+
+function onMIDIMessage(event) {
+    if (event.data[0] === 0xf8) {
+        return;
+    }
+    let str = `MIDI message received at timestamp ${event.timeStamp}[${event.data.length} bytes]:\n`;
+    for (const character of event.data) {
+        str += `0x${character.toString(16)} `;
+    }
+    console.log(str);
+}
+
+function startLoggingMIDIInput(midiAccess) {
+    midiAccess.inputs.forEach((entry) => {
+        entry.onmidimessage = onMIDIMessage;
+    });
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
     const button = document.getElementById('play');
+    const midiaccess = await navigator.requestMIDIAccess();
+    listInputsAndOutputs(midiaccess);
+    startLoggingMIDIInput(midiaccess);
+
     button.addEventListener('click', () => {
         const canvas = document.createElement('canvas');
         canvas.id = 'canvas';
