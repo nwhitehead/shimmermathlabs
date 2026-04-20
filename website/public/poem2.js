@@ -56,25 +56,6 @@ void main() {
 const SCREEN_W = 1280;
 const SCREEN_H = 720;
 
-class BasicVar {
-    constructor(initValue) {
-        this.x = initValue;
-        this.prev = initValue;
-    }
-    get value() {
-        return this.x;
-    }
-    set value(newValue) {
-        this.x = newValue;
-    }
-    setInstant(newValue) {
-        this.x = newValue;
-    }
-    update() {
-        this.prev = this.x;
-    }
-}
-
 class SmoothVar {
     constructor(initValue, speed) {
         this.x = initValue;
@@ -98,29 +79,6 @@ class SmoothVar {
     }
 }
 
-class Smooth4Var {
-    constructor(initValue, speed) {
-        this.x = initValue;
-        this.goalValue = initValue;
-        this.speed = speed ?? 0.01;
-    }
-    get value() {
-        return this.x;
-    }
-    set value(newValue) {
-        this.goalValue = newValue;
-    }
-    setInstant(newValue) {
-        this.x = newValue;
-        this.goalValue = newValue;
-    }
-    update() {
-        for (let i = 0; i < 4; i++) {
-            this.x[i] = this.x[i] + (this.goalValue[i] - this.x[i]) * this.speed;
-        }
-    }
-}
-
 let renderState = {
     time: 0,
     lastTime: -1, // make sure it is less than time
@@ -128,6 +86,15 @@ let renderState = {
     ctx: null,
     qs: null,
     knobs: (new Array(16)).fill(64),
+    vars: {
+        brightness: new SmoothVar(0),
+        color: new SmoothVar(0),
+        spread: new SmoothVar(0),
+        detail: new SmoothVar(0),
+        forward: new SmoothVar(0),
+        rotate: new SmoothVar(0),
+        tilt: new SmoothVar(0),
+    },
 };
 
 const fonts = [
@@ -138,11 +105,14 @@ const dd = 3.0;
 const ddd = 7.0;
 
 const msgs = [
+    { brightness: 20, color: 0, spread: 64, detail: 20, forward: 80, rotate: 64, tilt: 0 },
     dd,
     'THE END OF FASCISM', dd,
     d,
+    { brightness: 40 },
     'LOOKS LIKE', dd,
     d,
+    { brightness: 60 },
     'CENTURIES OF QUEERS', dd,
     d,
     'DANCING ON THE GRAVE OF', dd,
@@ -229,9 +199,9 @@ const msgs = [
     dd,
     "JUST BARELY BEGUN\nTO IMAGINE", dd,
     dd,
-    "JUST BARELY\nBEGUN TO IMAGINE", dd,
+    "JUST BARELY BEGUN\nTO IMAGINE", dd,
     dd,
-    "JUST BARELY BEGUN\nTO IMAGINE", ddd,
+    "JUST", d, d, "BARELY BEGUN", d, d, "TO IMAGINE", ddd,
     ddd,
     "THE END", dd,
     ddd,
@@ -371,23 +341,33 @@ function draw() {
     let ctx = renderState.ctx;
     ctx.clearRect(0, 0, SCREEN_W, SCREEN_H);
     const t = renderState.time;
-    // Update smooth vars
-    // Lock out rendering so we update all vars "simultaneously"
-    // renderState.qs.shouldRender = false;
-    // for (const [key, value] of Object.entries(renderState.vars)) {
-    //     value.update();
-    //     if (key === 'uForwardSpeed') {
-    //         if (value.prev !== value.value) {
-    //             const t = renderState.qs.time;
-    //             renderState.vars.uZOffset.value -= value.value * t - value.prev * t;
-    //         }
-    //     }
-    // }
-    // renderState.qs.shouldRender = true;
 
     // Process events
     for (const evt of events) {
         const shouldRender = cached === false || (t > evt.t && t <= evt.t + evt.keep + FADEOUT_TIME);
+        const shouldUpdate = (t >= evt.t && renderState.lastTime < evt.t) && evt.update !== undefined;
+        if (shouldUpdate) {
+            // evt is a variable update event
+            for (const [key, value] of Object.entries(evt.update)) {
+                if (key === 'brightness') {
+                    renderState.knobs[0] = value;
+                } else if (key === 'color') {
+                    renderState.knobs[1] = value;
+                } else if (key === 'spread') {
+                    renderState.knobs[2] = value;
+                } else if (key === 'detail') {
+                    renderState.knobs[3] = value;
+                } else if (key === 'forward') {
+                    renderState.knobs[4] = value;
+                } else if (key === 'rotate') {
+                    renderState.knobs[5] = value;
+                } else if (key === 'tilt') {
+                    renderState.knobs[6] = value;
+                } else {
+                    console.log('MISSING', key, value);
+                }
+            }
+        }
         if (shouldRender && evt.msg !== undefined) {
             ctx.save();
             if (cached === false) {
