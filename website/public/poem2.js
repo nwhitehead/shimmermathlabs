@@ -2,7 +2,7 @@ import { animate } from './quad-shader.js';
 
 const FRAGMENT_SHADER = `#version 300 es
 
-precision highp float;
+precision mediump float;
 
 in vec2 vPosition;
 
@@ -35,7 +35,7 @@ void main() {
     int steps = 150;
     float twist = 0.122;
     vec2 pd;
-    for(int i = 0; i < /* steps */150; i++)
+    for(int i = 0; i < 150; i++)
     {
         vec3 coord = vec3(vPosition.x, vPosition.y, -1.0);
         vec3 ncoord = normalize(coord);
@@ -48,7 +48,7 @@ void main() {
         z += d * uDetail;
         c += (uColor * sin(p.z * uColorSpread + uTime * uColorSpeed + uColorTilt) + 1.0) / d;
     }
-    fragColor = tanh(c * c * 0.0000001) * uBrightness;
+    fragColor = tanh((c / 1000.0) * (c / 1000.0) * 0.1) * uBrightness;
 }
 `;
 
@@ -309,15 +309,29 @@ function interp(x, lo, hi, f) {
 }
 
 function init() {
+    renderState.vars = {
+        uZOffset: 0,
+        uForwardSpeed: 0,
+    };
     renderState.qs.uniform1f("uBrightness", () => interp(renderState.knobs[0], 0.0, 1.0));
     renderState.qs.uniform1f("uColor", () => interp(renderState.knobs[1], 0.0, 1.0));
     renderState.qs.uniform1f("uColorSpeed", 1);
     renderState.qs.uniform1f("uColorSpread", () => interp(renderState.knobs[2], 0.0, 5.0, (y) => y * y * y));
     renderState.qs.uniform1f("uDetail", () => interp(renderState.knobs[3], 0.1, 3.0, (y) => y * y));
     // renderState.qs.uniform1f("uRotateSpeed", () => renderState.vars.uRotateSpeed.value);
-    // renderState.qs.uniform1f("uForwardSpeed", () => renderState.vars.uForwardSpeed.value);
+    renderState.qs.uniform1f("uForwardSpeed", () => {
+        let v = interp(renderState.knobs[4], -30, 30.0);
+        if (v !== renderState.vars.uForwardSpeed) {
+            const t = renderState.qs.time;
+            // correct offset for changing speed
+            renderState.vars.uZOffset -= v * t - renderState.vars.uForwardSpeed * t;
+            renderState.vars.uForwardSpeed = v;
+            console.log('t = ', t, ' speed = ', v, ' offset = ', renderState.vars.uZOffset);
+        }
+        return v;
+    });
     renderState.qs.uniform4f("uColorTilt", [1, 2, 5, 0]);
-    // renderState.qs.uniform1f("uZOffset", () => renderState.vars.uZOffset.value);
+    renderState.qs.uniform1f("uZOffset", () => renderState.vars.uZOffset);
 }
 
 let cached = false;
