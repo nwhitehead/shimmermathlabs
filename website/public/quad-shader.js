@@ -24,7 +24,9 @@ void main() {
 }
 `;
 export class QuadShader {
-    constructor(gl, canvas, state) {
+    constructor(gl, canvas, state, 
+    // When set to true, time must be set manually
+    manualTime) {
         Object.defineProperty(this, "gl", {
             enumerable: true,
             configurable: true,
@@ -43,6 +45,13 @@ export class QuadShader {
             writable: true,
             value: state
         });
+        Object.defineProperty(this, "manualTime", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: manualTime
+        });
+        // Always available to read, available to write if manualTime set
         Object.defineProperty(this, "time", {
             enumerable: true,
             configurable: true,
@@ -125,10 +134,10 @@ export class QuadShader {
 // Return a 'QuadShader' with following properties:
 //  * The shader is only rendered when the underlying canvas intersects the viewport
 //  * The uTime uniform is set to the time quad-shader load in seconds
-export function animate(canvas, fragShaderSrc) {
+export function animate(canvas, fragShaderSrc, manualTime) {
     const attached = attach(canvas, fragShaderSrc);
     const { state, gl } = attached;
-    const quadShader = new QuadShader(gl, canvas, state);
+    const quadShader = new QuadShader(gl, canvas, state, manualTime);
     // Use an observer to start (resp. stop) the rendering loop whenver the canvas
     // enters (resp. exits) the viewport.
     const observer = new IntersectionObserver((entries) => {
@@ -147,6 +156,9 @@ export function animate(canvas, fragShaderSrc) {
     /* uTime starts when the quad-shader was loaded */
     const loadMillis = performance.now();
     quadShader.uniform1f("uTime", () => {
+        if (quadShader.manualTime) {
+            return quadShader.time;
+        }
         const t = (performance.now() - loadMillis) / 1000;
         quadShader.time = t;
         return t;
