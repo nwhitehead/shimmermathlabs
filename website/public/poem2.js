@@ -2,7 +2,7 @@ import { animate } from './quad-shader.js';
 
 const FRAGMENT_SHADER = `#version 300 es
 
-precision mediump float;
+precision highp float;
 
 in vec2 vPosition;
 
@@ -23,16 +23,13 @@ out vec4 fragColor;
 
 void main() {
     // vPosition.xy is in [-1..1]
+    const float PI = 3.14159265359;
 
     vec4 c = vec4(0.0);
     vec3 p;
     float z = 0.0;
     float d;
     vec4 xyvec = vec4(0, 33, 11, 0);
-    vec4 cxyvec = vec4(1, 3, 5, 0);
-    float detail = 1.5;
-    float detail_level = 0.3;
-    int steps = 150;
     float twist = 0.122;
     vec2 pd;
     for(int i = 0; i < 150; i++)
@@ -48,7 +45,7 @@ void main() {
         z += d * uDetail;
         c += (uColor * sin(p.z * uColorSpread + uTime * uColorSpeed + uColorTilt) + 1.0) / d;
     }
-    fragColor = tanh((c / 1000.0) * (c / 1000.0) * 0.1) * uBrightness;
+    fragColor = vec4((tanh((c / 1000.0) * (c / 1000.0) * 0.1) * uBrightness).rgb, 1.0);
 }
 `;
 
@@ -313,8 +310,8 @@ function init() {
         uZOffset: 0,
         uForwardSpeed: 0,
     };
-    renderState.qs.uniform1f("uBrightness", () => interp(renderState.knobs[0], 0.0, 1.0));
-    renderState.qs.uniform1f("uColor", () => interp(renderState.knobs[1], 0.0, 1.0));
+    renderState.qs.uniform1f("uBrightness", () => interp(renderState.knobs[0], 0.0, 2.0, (y) => y * y));
+    renderState.qs.uniform1f("uColor", () => interp(renderState.knobs[1], 0.0, 2.0));
     renderState.qs.uniform1f("uColorSpeed", 1);
     renderState.qs.uniform1f("uColorSpread", () => interp(renderState.knobs[2], 0.0, 5.0, (y) => y * y * y));
     renderState.qs.uniform1f("uDetail", () => interp(renderState.knobs[3], 0.1, 3.0, (y) => y * y));
