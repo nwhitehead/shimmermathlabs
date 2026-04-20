@@ -312,12 +312,24 @@ function init() {
     renderState.vars = {
         uZOffset: 0,
         uForwardSpeed: 0,
+        uColorSpread: 0,
         uColorSpreadOffset: 0,
     };
     renderState.qs.uniform1f("uBrightness", () => interp(renderState.knobs[0], 0.0, 2.0, (y) => y * y));
     renderState.qs.uniform1f("uColor", () => interp(renderState.knobs[1], 0.0, 2.0));
     renderState.qs.uniform1f("uColorSpeed", 1);
-    renderState.qs.uniform1f("uColorSpread", () => interp(renderState.knobs[2], 0.0, 5.0, (y) => y * y * y));
+    renderState.qs.uniform1f("uColorSpread", () => {
+        const v = interp(renderState.knobs[2], 0.0, 5.0, (y) => y * y * y);
+        if (v !== renderState.vars.uColorSpread) {
+            const t = renderState.qs.time;
+            // correct offset for changing spread
+            const pz0 = -(t * renderState.vars.uForwardSpeed + renderState.vars.uZOffset);
+            renderState.vars.uColorSpreadOffset -= v * pz0 - (renderState.vars.uColorSpread ?? 0) * pz0;
+            renderState.vars.uColorSpread = v;
+            console.log('t = ', t, ' pz0 = ', pz0, ' offset = ', renderState.vars.uColorSpreadOffset);
+        }
+        return v;
+    });
     renderState.qs.uniform1f("uDetail", () => interp(renderState.knobs[3], 0.1, 3.0, (y) => y * y));
     // renderState.qs.uniform1f("uRotateSpeed", () => renderState.vars.uRotateSpeed.value);
     renderState.qs.uniform1f("uForwardSpeed", () => {
