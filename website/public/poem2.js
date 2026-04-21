@@ -331,7 +331,7 @@ function compile(msgs) {
     return result;
 }
 
-function main(init, draw) {
+function main() {
     renderState.ctx = document.getElementById('canvas').getContext('2d');
     renderState.startTime = performance.now();
 
@@ -383,8 +383,11 @@ function interp(x, lo, hi, f) {
     return lo + (hi - lo) * y;
 }
 
-function init() {
+async function preinit() {
     renderState.events = compile(msgs);
+}
+
+function init() {
     renderState.vars = {
         uZOffset: 0,
         uForwardSpeed: 0,
@@ -427,7 +430,6 @@ function init() {
         }
         return v;
     });
-
     renderState.qs.uniform4f("uColorTilt", () => {
         return [
             1,
@@ -495,7 +497,11 @@ function draw(drawText) {
 
 document.addEventListener("DOMContentLoaded", async () => {
     const button = document.getElementById('play');
-
+    document.fonts.ready.then(async () => {
+        await preinit();
+        document.getElementById('play').style.display = 'block';
+        document.getElementById('loader').style.display = 'none';
+    });
     button.addEventListener('click', () => {
         const canvas = document.createElement('canvas');
         canvas.id = 'canvas';
@@ -519,6 +525,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         renderState.qs = qs;
         renderState.qs.time = 0;
 
-        main(init, draw);
+        main();
     });
 });
