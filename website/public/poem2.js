@@ -289,7 +289,6 @@ function compile(msgs) {
 }
 
 const events = compile(msgs);
-console.log(events);
 
 const FADEIN_TIME = 0.5;
 const FADEOUT_TIME = 0.5;
@@ -298,17 +297,41 @@ function main(init, draw) {
     renderState.ctx = document.getElementById('canvas').getContext('2d');
     renderState.startTime = performance.now();
 
-    // const dataChunks = [];
-    // const videoStream = document.getElementById('canvas').canvasEl.captureStream[0];
-    // const mediaRecorder = new MediaRecorder(videoStream);
-
+    const videoStream = document.getElementById('canvas').captureStream();
+    const mediaRecorder = new MediaRecorder(videoStream);
+    let chunks = [];
+    mediaRecorder.addEventListener('dataavailable', (e) => {
+        chunks.push(e.data);
+    });
+    mediaRecorder.addEventListener('stop', () => {
+        console.log('done recording');
+        const blob = new Blob(chunks, { type: mediaRecorder.mimeType });
+        chunks = [];
+        const dlUrl = URL.createObjectURL(blob);
+        const link = document.createElement("a")
+        link.download = "canvas-capture.mp4";
+        link.href = dlUrl;
+        link.style.display = "none";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(dlUrl);
+    });
+    mediaRecorder.start();
+    
     init();
 
     let f = (() => {
         draw();
-        window.requestAnimationFrame(f);
+        videoStream.getVideoTracks()[0].requestFrame();
+        if (renderState.time < 35) {
+            window.requestAnimationFrame(f);
+        } else {
+            mediaRecorder.stop();
+        }
     });
     f();
+
 }
 
 function interp(x, lo, hi, f) {
@@ -379,18 +402,13 @@ function init() {
     renderState.qs.uniform1f("uAspectRatio", SCREEN_W / SCREEN_H);
 }
 
-let cached = false;
-
 function draw() {
     renderState.time += 1/60;//(performance.now() - renderState.startTime) * 0.001;
     renderState.qs.time = renderState.time;
 
     let ctx = renderState.ctx;
     const glcanvas = document.getElementById('glcanvas');
-    ctx.fillStyle = "#f00";
-    ctx.fillRect(0, 0, SCREEN_W, SCREEN_H);
     ctx.drawImage(glcanvas, 0, 0);
-    //ctx.clearRect(0, 0, SCREEN_W, SCREEN_H);
     const t = renderState.time;
 
     // Update vars to knobs
@@ -407,7 +425,7 @@ function draw() {
 
     // Process events
     for (const evt of events) {
-        const shouldRender = cached === false || (t > evt.t && t <= evt.t + evt.keep + FADEOUT_TIME);
+        const shouldRender = (t > evt.t && t <= evt.t + evt.keep + FADEOUT_TIME);
         const shouldUpdate = (t >= evt.t && renderState.lastTime < evt.t) && evt.update !== undefined;
         if (shouldUpdate) {
             // evt is a variable update event
@@ -421,9 +439,7 @@ function draw() {
         }
         if (shouldRender && evt.msg !== undefined) {
             ctx.save();
-            if (cached === false) {
-                ctx.globalAlpha = 0.5;
-            } else if (t > evt.t && t < evt.t + FADEIN_TIME) {
+            if (t > evt.t && t < evt.t + FADEIN_TIME) {
                 const x = (t - evt.t) / FADEIN_TIME;
                 ctx.globalAlpha = x;
             } else if (t > evt.t + evt.keep && t <= evt.t + evt.keep + FADEOUT_TIME) {
@@ -459,7 +475,6 @@ function draw() {
             ctx.restore();
         }
     }
-    cached = true;
 
     renderState.lastTime = renderState.time;
 }
