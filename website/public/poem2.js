@@ -299,7 +299,7 @@ function main(init, draw) {
     renderState.ctx = document.getElementById('canvas').getContext('2d');
     renderState.startTime = performance.now();
 
-    const videoStream = document.getElementById('glcanvas').captureStream(60);
+    const videoStream = document.getElementById('canvas').captureStream(60);
     const mediaRecorder = new MediaRecorder(videoStream, {
         videoBitsPerSecond: 25e6,
     });
@@ -325,7 +325,7 @@ function main(init, draw) {
     init();
 
     let f = (async () => {
-        draw(false);
+        draw(true);
         if (renderState.time < END_TIME) {
             window.requestAnimationFrame(f);
         } else {
@@ -405,7 +405,8 @@ function init() {
 }
 
 function draw(drawText) {
-    renderState.time += 1/60;//(performance.now() - renderState.startTime) * 0.001;
+    // renderState.time += 1/60;//(performance.now() - renderState.startTime) * 0.001;
+    renderState.time = (performance.now() - renderState.startTime) * 0.001 + 35;
     renderState.qs.time = renderState.time;
 
     let ctx = renderState.ctx;
