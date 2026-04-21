@@ -293,7 +293,7 @@ function generateCanvas(evt) {
     return canvas;
 }
 
-function compile(msgs) {
+async function compile(msgs) {
     let result = [];
     let t = 0.0;
     let font = 0;
@@ -327,6 +327,7 @@ function compile(msgs) {
                 });
             }
         }
+        await scheduler.yield();
     }
     return result;
 }
@@ -384,7 +385,7 @@ function interp(x, lo, hi, f) {
 }
 
 async function preinit() {
-    renderState.events = compile(msgs);
+    renderState.events = await compile(msgs);
 }
 
 function init() {
