@@ -55,9 +55,9 @@ void main() {
 
 const SCREEN_W = 1280;
 const SCREEN_H = 720;
-const START_TIME = 8;
-const END_TIME = 35;
-const FADEIN_TIME = 0.1;
+const START_TIME = 0;
+const END_TIME = 240;
+const FADEIN_TIME = 0.5;
 const FADEOUT_TIME = 0.5;
 
 
