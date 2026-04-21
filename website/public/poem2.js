@@ -55,6 +55,11 @@ void main() {
 
 const SCREEN_W = 1280;
 const SCREEN_H = 720;
+const START_TIME = 8;
+const END_TIME = 35;
+const FADEIN_TIME = 0.1;
+const FADEOUT_TIME = 0.5;
+
 
 class SmoothVar {
     constructor(initValue, speed) {
@@ -80,7 +85,7 @@ class SmoothVar {
 }
 
 let renderState = {
-    time: 30,
+    time: START_TIME,
     lastTime: -1, // make sure it is less than time
     text: [],
     ctx: null,
@@ -290,14 +295,11 @@ function compile(msgs) {
 
 const events = compile(msgs);
 
-const FADEIN_TIME = 0.5;
-const FADEOUT_TIME = 0.5;
-
 function main(init, draw) {
     renderState.ctx = document.getElementById('canvas').getContext('2d');
     renderState.startTime = performance.now();
 
-    const videoStream = document.getElementById('canvas').captureStream();
+    const videoStream = document.getElementById('glcanvas').captureStream(0);
     const mediaRecorder = new MediaRecorder(videoStream);
     let chunks = [];
     mediaRecorder.addEventListener('dataavailable', (e) => {
@@ -321,10 +323,10 @@ function main(init, draw) {
     
     init();
 
-    let f = (() => {
-        draw();
+    let f = (async () => {
+        await draw();
         videoStream.getVideoTracks()[0].requestFrame();
-        if (renderState.time < 35) {
+        if (renderState.time < END_TIME) {
             window.requestAnimationFrame(f);
         } else {
             mediaRecorder.stop();
@@ -402,7 +404,7 @@ function init() {
     renderState.qs.uniform1f("uAspectRatio", SCREEN_W / SCREEN_H);
 }
 
-function draw() {
+async function draw() {
     renderState.time += 1/60;//(performance.now() - renderState.startTime) * 0.001;
     renderState.qs.time = renderState.time;
 
