@@ -299,14 +299,13 @@ function main(init, draw) {
     renderState.ctx = document.getElementById('canvas').getContext('2d');
     renderState.startTime = performance.now();
 
-    const videoStream = document.getElementById('glcanvas').captureStream(0);
+    const videoStream = document.getElementById('glcanvas').captureStream(60);
     const mediaRecorder = new MediaRecorder(videoStream);
     let chunks = [];
     mediaRecorder.addEventListener('dataavailable', (e) => {
         chunks.push(e.data);
     });
     mediaRecorder.addEventListener('stop', () => {
-        console.log('done recording');
         const blob = new Blob(chunks, { type: mediaRecorder.mimeType });
         chunks = [];
         const dlUrl = URL.createObjectURL(blob);
@@ -324,8 +323,7 @@ function main(init, draw) {
     init();
 
     let f = (async () => {
-        await draw();
-        videoStream.getVideoTracks()[0].requestFrame();
+        draw(false);
         if (renderState.time < END_TIME) {
             window.requestAnimationFrame(f);
         } else {
@@ -404,7 +402,7 @@ function init() {
     renderState.qs.uniform1f("uAspectRatio", SCREEN_W / SCREEN_H);
 }
 
-async function draw() {
+function draw(drawText) {
     renderState.time += 1/60;//(performance.now() - renderState.startTime) * 0.001;
     renderState.qs.time = renderState.time;
 
@@ -427,7 +425,7 @@ async function draw() {
 
     // Process events
     for (const evt of events) {
-        const shouldRender = (t > evt.t && t <= evt.t + evt.keep + FADEOUT_TIME);
+        const shouldRender = (t > evt.t && t <= evt.t + evt.keep + FADEOUT_TIME) && drawText;
         const shouldUpdate = (t >= evt.t && renderState.lastTime < evt.t) && evt.update !== undefined;
         if (shouldUpdate) {
             // evt is a variable update event
