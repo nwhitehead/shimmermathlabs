@@ -300,7 +300,9 @@ function main(init, draw) {
     renderState.startTime = performance.now();
 
     const videoStream = document.getElementById('glcanvas').captureStream(60);
-    const mediaRecorder = new MediaRecorder(videoStream);
+    const mediaRecorder = new MediaRecorder(videoStream, {
+        videoBitsPerSecond: 25e6,
+    });
     let chunks = [];
     mediaRecorder.addEventListener('dataavailable', (e) => {
         chunks.push(e.data);
