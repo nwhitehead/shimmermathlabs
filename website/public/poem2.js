@@ -331,8 +331,6 @@ function compile(msgs) {
     return result;
 }
 
-const events = compile(msgs);
-
 function main(init, draw) {
     renderState.ctx = document.getElementById('canvas').getContext('2d');
     renderState.startTime = performance.now();
@@ -386,6 +384,7 @@ function interp(x, lo, hi, f) {
 }
 
 function init() {
+    renderState.events = compile(msgs);
     renderState.vars = {
         uZOffset: 0,
         uForwardSpeed: 0,
@@ -443,7 +442,6 @@ function init() {
 }
 
 function draw(drawText) {
-    // renderState.time += 1/60;//(performance.now() - renderState.startTime) * 0.001;
     renderState.time = (performance.now() - renderState.startTime) * 0.001 + 35;
     renderState.qs.time = renderState.time;
 
@@ -465,7 +463,7 @@ function draw(drawText) {
     }
 
     // Process events
-    for (const evt of events) {
+    for (const evt of renderState.events) {
         const shouldRender = (t > evt.t && t <= evt.t + evt.keep + FADEOUT_TIME) && drawText;
         const shouldUpdate = (t >= evt.t && renderState.lastTime < evt.t) && evt.update !== undefined;
         if (shouldUpdate) {
