@@ -259,6 +259,40 @@ const msgs = [
     dd,
 ];
 
+function generateCanvas(evt) {
+    const canvas = document.createElement('canvas');
+    canvas.width = SCREEN_W;
+    canvas.height = SCREEN_H;
+    const ctx = canvas.getContext('2d');
+    const f = fonts[evt.font];
+    ctx.font = f;
+    const lines = evt.msg.split('\n');
+    const measures = lines.map((txt) => ctx.measureText(txt));
+    let maxW = 0;
+    let sumH = 0;
+    let ascent = measures[0].fontBoundingBoxAscent * 1.25;
+    for (const m of measures) {
+        maxW = Math.max(maxW, m.width);
+        sumH += ascent;
+    }
+    let x = SCREEN_W / 2 + evt.pos[0] - maxW / 2;
+    let y = SCREEN_H / 2 + evt.pos[1] - sumH / 2 + ascent;
+    for (let idx = 0; idx < lines.length; idx++) {
+        const line = lines[idx];
+        let center_dx = (maxW - measures[idx].width) / 2;
+        // align left
+        ctx.strokeStyle = "#000";
+        ctx.lineWidth = 40.0;
+        ctx.lineJoin = 'round';
+        ctx.strokeText(line, x + center_dx, y);
+        ctx.fillStyle = "#fff";
+        ctx.fillText(line, x + center_dx, y);
+        // align center
+        y += ascent;
+    }
+    return canvas;
+}
+
 function compile(msgs) {
     let result = [];
     let t = 0.0;
@@ -275,9 +309,13 @@ function compile(msgs) {
                 }
             }
         } else if (typeof msg === 'string') {
-            result.push({
+            // Render text!
+            const evt = {
                 t, msg, font, pos, align, pos, keep: 0,
-            });
+            };
+            const canvas = generateCanvas(evt);
+            evt.canvas = canvas;
+            result.push(evt);
             pos = [0, 0];
         } else {
             if (msg.pos !== undefined) {
@@ -449,32 +487,7 @@ function draw(drawText) {
                 const x = (t - evt.t - evt.keep) / FADEOUT_TIME;
                 ctx.globalAlpha = 1 - x;
             }
-            const f = fonts[evt.font];
-            ctx.font = f;
-            const lines = evt.msg.split('\n');
-            const measures = lines.map((txt) => ctx.measureText(txt));
-            let maxW = 0;
-            let sumH = 0;
-            let ascent = measures[0].fontBoundingBoxAscent * 1.25;
-            for (const m of measures) {
-                maxW = Math.max(maxW, m.width);
-                sumH += ascent;
-            }
-            let x = SCREEN_W / 2 + evt.pos[0] - maxW / 2;
-            let y = SCREEN_H / 2 + evt.pos[1] - sumH / 2 + ascent;
-            for (let idx = 0; idx < lines.length; idx++) {
-                const line = lines[idx];
-                let center_dx = (maxW - measures[idx].width) / 2;
-                // align left
-                ctx.strokeStyle = "#000";
-                ctx.lineWidth = 40.0;
-                ctx.lineJoin = 'round';
-                ctx.strokeText(line, x + center_dx, y);
-                ctx.fillStyle = "#fff";
-                ctx.fillText(line, x + center_dx, y);
-                // align center
-                y += ascent;
-            }
+            ctx.drawImage(evt.canvas, 0, 0);
             ctx.restore();
         }
     }
