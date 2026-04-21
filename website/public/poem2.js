@@ -56,10 +56,10 @@ void main() {
 const SCREEN_W = 1280;
 const SCREEN_H = 720;
 const START_TIME = 0;
-const END_TIME = 240;
+const END_TIME = 260;
 const FADEIN_TIME = 0.5;
 const FADEOUT_TIME = 0.5;
-
+const SHOULD_RECORD = false;
 
 class SmoothVar {
     constructor(initValue, speed) {
@@ -110,7 +110,7 @@ const dd = 3.0;
 const ddd = 7.0;
 
 const msgs = [
-    { brightness: 20, color: 0, spread: 64, detail: 20, forward: 80, rotate: 64, tilt: 0 },
+    { brightness: 30, color: 0, spread: 64, detail: 20, forward: 80, rotate: 64, tilt: 0 },
     dd,
     'THE END OF FASCISM', dd,
     d,
@@ -179,13 +179,13 @@ const msgs = [
     "THERE WILL BE A", d,
     d,
     "GIANT DANCE PARTY", d,
-    { rotate: 64 + 50 },
+    { rotate: 64 + 30 },
     d,
     "& CLUB CHAI WILL DJ", d,
     d,
     "& IT WILL BE AT\nTHE STUD", d,
     d,
-    { rotate: 64 - 50 },
+    { rotate: 64 - 30 },
     "& WE'LL ALL FUCKING DANCE", dd,
     d,
     "UNTIL WE SWEAT", d,
@@ -257,6 +257,8 @@ const msgs = [
     dd,
     "Music:\nSympathetic Resonance\nby As Seas Exhale", ddd,
     dd,
+    ddd,
+    { brightness: 30, color: 0, spread: 64, detail: 20, forward: 80, rotate: 64, tilt: 0 }, d,
 ];
 
 function generateCanvas(evt) {
@@ -327,6 +329,7 @@ async function compile(msgs) {
                 });
             }
         }
+        // avoid blocking main ui for too long
         await scheduler.yield();
     }
     return result;
@@ -336,37 +339,46 @@ function main() {
     renderState.ctx = document.getElementById('canvas').getContext('2d');
     renderState.startTime = performance.now();
 
-    const videoStream = document.getElementById('canvas').captureStream(60);
-    const mediaRecorder = new MediaRecorder(videoStream, {
-        videoBitsPerSecond: 25e6,
-    });
-    let chunks = [];
-    mediaRecorder.addEventListener('dataavailable', (e) => {
-        chunks.push(e.data);
-    });
-    mediaRecorder.addEventListener('stop', () => {
-        const blob = new Blob(chunks, { type: mediaRecorder.mimeType });
-        chunks = [];
-        const dlUrl = URL.createObjectURL(blob);
-        const link = document.createElement("a")
-        link.download = "canvas-capture.mp4";
-        link.href = dlUrl;
-        link.style.display = "none";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(dlUrl);
-    });
-    mediaRecorder.start();
-    
+    let mediaRecorder = null;
+    if (SHOULD_RECORD) {
+        const videoStream = document.getElementById('canvas').captureStream(60);
+        mediaRecorder = new MediaRecorder(videoStream, {
+            videoBitsPerSecond: 25e6,
+        });
+        let chunks = [];
+        mediaRecorder.addEventListener('dataavailable', (e) => {
+            chunks.push(e.data);
+        });
+        mediaRecorder.addEventListener('stop', () => {
+            const blob = new Blob(chunks, { type: mediaRecorder.mimeType });
+            chunks = [];
+            const dlUrl = URL.createObjectURL(blob);
+            const link = document.createElement("a")
+            link.download = "canvas-capture.mp4";
+            link.href = dlUrl;
+            link.style.display = "none";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(dlUrl);
+        });
+        mediaRecorder.start();
+    }
     init();
 
-    let f = (async () => {
+    const f = (async () => {
         draw(true);
         if (renderState.time < END_TIME) {
             window.requestAnimationFrame(f);
         } else {
-            mediaRecorder.stop();
+            if (SHOULD_RECORD) {
+                mediaRecorder.stop();
+            }
+            // Loop baby!
+            renderState.startTime = performance.now();
+            // make sure lastTime is less than startTime so events at t=0 trigger
+            renderState.lastTime = renderState.startTime - 1;
+            window.requestAnimationFrame(f);
         }
     });
     f();
@@ -445,7 +457,7 @@ function init() {
 }
 
 function draw(drawText) {
-    renderState.time = (performance.now() - renderState.startTime) * 0.001 + 35;
+    renderState.time = (performance.now() - renderState.startTime) * 0.001 + START_TIME;
     renderState.qs.time = renderState.time;
 
     let ctx = renderState.ctx;
@@ -521,6 +533,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         canvas.parentNode.appendChild(glcanvas);
         const music = document.getElementById('bgmusic');
         music.volume = 0.3;
+        // // Option to start track in middle
+        // music.currentTime = /* 6m39s */ 6 * 60 + 39;
+        music.loop = true;
         music.play();
         const qs = animate(glcanvas, FRAGMENT_SHADER, /* manualTime= */ true);
         renderState.qs = qs;
