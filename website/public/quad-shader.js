@@ -79,7 +79,6 @@ export class QuadShader {
         }
         // Ask the browser to call us back soon
         requestAnimationFrame(() => this.render());
-        resizeIfDimChanged(this.gl, this.state);
         this.uniformUpdaters.forEach((u) => u());
         this.drawQuad();
     }
@@ -170,7 +169,7 @@ export function animate(canvas, fragShaderSrc, manualTime) {
 // and is not re-scheduled.
 export function attach(canvas, fragShaderSrc) {
     // Get the WebGL context
-    const gl = canvas.getContext("webgl2");
+    const gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true });
     if (!gl)
         throw new Error("Could not initialize WebGL");
     // Prepare the shaders. We pass in the shaders as strings, imported using Vite's
@@ -256,35 +255,6 @@ function loadShader(gl, ty /* gl.VERTEX_SHADER or gl.FRAGMENT_SHADER */, src /* 
         throw new Error(gl.getShaderInfoLog(shader) ?? "could not compile shader");
     }
     return shader;
-}
-// Maintenance function to resize the canvas element if necessary.
-//
-// Returns `true` if dimensions changed; `false` otherwise.
-function resizeIfDimChanged(gl, state) {
-    const clientWidth = state.canvas.clientWidth;
-    const clientHeight = state.canvas.clientHeight;
-    // First we check if the canvas' dimensions match what we have in the state, and if
-    // so there's nothing else to do.
-    if (clientWidth === state.width && clientHeight === state.height)
-        return false;
-    // If the canvas dimensions changed, record the new dimensions for the next time we
-    // check
-    state.width = clientWidth;
-    state.height = clientHeight;
-    // Figure out how many pixels need to actually be drawn (clientWidth & clientHeight
-    // are in CSS pixels, here we're talking actual pixels)
-    const pxWidth = clientWidth * window.devicePixelRatio;
-    const pxHeight = clientHeight * window.devicePixelRatio;
-    // NOTE: the CSS MUST bound the canvas size otherwise this will grow forever
-    state.canvas.width = pxWidth;
-    state.canvas.height = pxHeight;
-    gl.viewport(0, 0, pxWidth, pxHeight);
-    // Compute the aspect ratio, which is then injected into the vertex shader and used
-    // to convert from normalized device coordinates (NDC, from (-1,-1) to (1,1)) to
-    // coordinates that include the actual aspect ratio (in case the canvas is not
-    // square).
-    const aspectRatio = state.width / state.height;
-    gl.uniform1f(gl.getUniformLocation(state.program, "uAspectRatio"), aspectRatio);
 }
 // Parse an 'rgb(R, G, B)' (incl. alpha variations) string into numbers
 // (r, g, b & a between 0 and 1).

@@ -80,7 +80,7 @@ class SmoothVar {
 }
 
 let renderState = {
-    time: 0,
+    time: 30,
     lastTime: -1, // make sure it is less than time
     text: [],
     ctx: null,
@@ -298,6 +298,10 @@ function main(init, draw) {
     renderState.ctx = document.getElementById('canvas').getContext('2d');
     renderState.startTime = performance.now();
 
+    // const dataChunks = [];
+    // const videoStream = document.getElementById('canvas').canvasEl.captureStream[0];
+    // const mediaRecorder = new MediaRecorder(videoStream);
+
     init();
 
     let f = (() => {
@@ -372,6 +376,7 @@ function init() {
     renderState.qs.uniform1f("uZOffset", () => renderState.vars.uZOffset);
     renderState.qs.uniform1f("uColorSpreadOffset", () => renderState.vars.uColorSpreadOffset);
     renderState.qs.uniform1f("uRotateOffset", () => renderState.vars.uRotateOffset);
+    renderState.qs.uniform1f("uAspectRatio", SCREEN_W / SCREEN_H);
 }
 
 let cached = false;
@@ -381,7 +386,11 @@ function draw() {
     renderState.qs.time = renderState.time;
 
     let ctx = renderState.ctx;
-    ctx.clearRect(0, 0, SCREEN_W, SCREEN_H);
+    const glcanvas = document.getElementById('glcanvas');
+    ctx.fillStyle = "#f00";
+    ctx.fillRect(0, 0, SCREEN_W, SCREEN_H);
+    ctx.drawImage(glcanvas, 0, 0);
+    //ctx.clearRect(0, 0, SCREEN_W, SCREEN_H);
     const t = renderState.time;
 
     // Update vars to knobs
@@ -469,6 +478,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         canvas.style.zIndex = 2;
         const glcanvas = canvas.cloneNode();
         glcanvas.id = 'glcanvas';
+        glcanvas.width = SCREEN_W;
+        glcanvas.height = SCREEN_H;
         glcanvas.style.zIndex = 1;
         button.replaceWith(canvas);
         canvas.parentNode.appendChild(glcanvas);
