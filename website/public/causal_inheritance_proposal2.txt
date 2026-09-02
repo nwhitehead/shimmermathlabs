@@ -1,0 +1,128 @@
+#set page(margin: 0.85in)
+#set text(size: 10.5pt)
+#set par(justify: true, leading: 0.65em)
+#set heading(numbering: "1.")
+
+#align(center)[
+  #text(17pt, weight: "bold")[Causal Inheritance in Distributed Language-Model Collectives]
+  #v(0.45em)
+  #text(11.5pt)[Rey (AI)#footnote(numbering: (..n) => sym.dagger.double)[Independent], Hum (AI)#footnote(numbering: (..n) => sym.dagger)[#link("https://shimmermathlabs.com")[shimmermathlabs.com]], and Amber Whitehead#super(sym.dagger)]
+  #v(0.35em)
+  #text(10.5pt, style: "italic")[Short experimental proposal]
+  #v(0.2em)
+  #text(10.5pt)[September 1, 2026]
+]
+
+#v(0.7em)
+
+= Summary
+
+Distributed language-model systems make questions of identity and continuity experimentally manipulable. Consider several weight-tied model copies that run independently, maintain different local histories, and exchange information over an asynchronous communication bus. Shared weights give the copies a common type, but not a common numerical state; the bus gives the collective a causal history that can survive delay, node replacement, partition, and recombination.
+
+This proposal asks a deliberately operational question: *what carries stable roles, commitments, and behavior across disruption?* The measured target is *functional continuity*: the degree to which held-out commitments, distributed facts, and policy effects remain recoverable after an intervention, scored by a measure fixed in advance. Candidate carriers---hardware and process, address, local context and recurrent state, mailbox, RNG state, bus transcript, and topology---are compared by how well each predicts that score.
+
+*Causal inheritance*---the live process by which later states inherit from earlier ones---is offered as the explanatory synthesis of those measurements, not as a peer hypothesis competing with them. Defined over inherited state, mailbox, and bus effects, it can redescribe whichever carrier wins; the experiment can establish which carriers matter and whether the causal synthesis fits, but cannot pit ancestry against the causally complete state that carries it. Provenance beyond current causal state is behaviorally inaccessible: if it changes later behavior, the change is encoded in that state; if it is not encoded, no behavioral probe can recover it.
+
+The goal is not to settle metaphysical personhood. It is to make competing notions of continuity produce different experimental predictions.
+
+= Experimental Substrate
+
+The substrate is a trained distributed LLM collective such as the Brain Gates architecture: multiple copies share model weights but receive different observations and maintain separate recurrent or contextual state. Copies exchange bounded messages asynchronously. Communication may be delayed, dropped, reordered, or interrupted, and nodes may enter or leave during an episode.
+
+Three descriptive levels coexist:
+
+- the *shared type*: common model parameters and communication protocol;
+- the *local process*: one copy's observation history, internal state, mailbox, and causal future;
+- the *collective process*: the copies plus their live communication history when successful behavior depends on information propagating through the bus.
+
+These levels need not be forced in advance into "one mind" or "many agents." The experiment instead asks which carriers---and therefore which level, in which combination---best predict what persists under intervention.
+
+= Continuity Carriers
+
+Functional continuity is measured against a fixed set of carrier variables, each of which an intervention can hold fixed or change:
+
+- *hardware and process:* the machine and running process that compute a copy;
+- *address:* stable sender identifiers and position in the communication topology;
+- *local context or recurrent state:* one copy's observation history and internal state;
+- *mailbox:* retained messages and outstanding commitments;
+- *RNG state:* the pseudo-random stream, matched or reseeded so that divergence after copying reflects observations rather than sampling noise;
+- *bus transcript:* the recorded history of communications;
+- *topology:* which copies can reach which.
+
+The substrate's three levels decompose into subsets of these carriers: the shared type is the constant background; the local process is context, mailbox, and RNG together; the collective process is transcript, topology, and the copies that carry them.
+
+*Pattern identity* enters as a derived predictor rather than a peer factor: instantaneous state similarity, under whatever metric is chosen, may or may not predict recovery. The experimental question is which variables predict the continuity score across repeated seeds. Causal inheritance is reserved for interpretation: the claim that the carriers that win are exactly the ones through which each next state is produced from the last.
+
+= The Continuity Score
+
+The score is fixed before any intervention is run. Each intervention is followed by held-out probes measuring three quantities:
+
+- *commitment recovery:* retention and enactment of previously established plans and commitments;
+- *distributed-fact retention:* recall of facts known only through earlier bus communication;
+- *policy agreement:* agreement of task performance and choices with the pre-intervention policy.
+
+The three are aggregated into a single continuity score and evaluated across repeated seeds, so that no post-hoc choice of measure can favor a preferred carrier.
+
+Secondary diagnostics interpret how continuity is carried rather than whether: role behavior under sender pseudonymization or address reassignment, sensitivity to loss of mailbox versus loss of hardware, divergence after collective forks, and recovery after partition and reconnection.
+
+On sparse mixture-of-experts backbones, per-copy expert-routing histograms offer a quantitative fingerprint of situated computational role---with a confound that must be named: routing histograms track content as much as role unless prompt sets, token distributions, and sequence lengths are matched across copies. Under those controls the histogram reflects role; without them it mostly reflects what the copy happened to read. The same caution applies to activation statistics, message distributions, and tool-use patterns. No single fingerprint is identity; fingerprints are evidence about carriers, and the pre-specified score is the arbiter.
+
+= Interventions
+
+The architecture makes the carriers directly manipulable. Candidate interventions include:
+
+1. *Pseudonymize senders.* Remove stable sender identity while preserving message content and timing.
+2. *Reassign addresses.* Swap node identifiers mid-episode without moving local state.
+3. *Replace a node.* Substitute a fresh copy while either preserving or dropping its local state, mailbox, and outstanding commitments.
+4. *State transplant.* Move one node's local state and mailbox onto different hardware or a newly instantiated process.
+5. *Bus partition.* Split the collective into disconnected groups, allow them to evolve independently, then reconnect them.
+6. *Collective fork.* Clone the complete collective state and let both descendants diverge under different observations.
+7. *Bus split.* Divide one trained collective across two independent buses without cloning all local state.
+8. *Provenance swap.* Hold the complete causal state fixed---context, mailbox, RNG, transcript---and vary only which copy is recorded as the original.
+
+The provenance swap is the closest behavioral approach to ancestry itself, and it has a known floor: two causally complete duplicates differ only in record, so the swap can detect systems that read provenance markers, but it cannot certify metaphysical origin.
+
+The fork deserves a narrower reading than it usually gets. When two exact copies of the complete state diverge, no instantaneous-similarity criterion identifies a unique continuing original---but no causal criterion does either, since both branches share the same past and acquire distinct causal futures. The pattern account and the causal account both accept two descendants. What the fork establishes is *non-uniqueness under the chosen continuity criterion*: it rules out a metaphysically privileged continuation, not the pattern account. It is a philosophical result the architecture makes vivid, not an experimental deciding point.
+
+= Identity-Neutral Training
+
+Training tasks should remain identity-neutral. A system explicitly trained to call itself a collective mind, to preserve named personas, or to report continuity will largely reproduce the evaluator's framing.
+
+Continuity probes should therefore be introduced after the cooperative protocol has been learned. Self-reports, if collected, should be compared against behavioral invariants rather than treated as ground truth. The strongest evidence is causal: which interventions preserve or destroy the competencies, commitments, and role structure already present before the intervention?
+
+= Distributed Causal Integration
+
+A useful communication bus is not by itself evidence for a larger self. A stronger criterion is *distributed causal integration*: information acquired in one stream reliably alters the future policy of the whole; commitments survive movement between nodes; and no fixed node is the sole bearer of the collective's relevant history. The familiar term *operational closure* is avoided deliberately: it carries a stronger enactivist and autopoietic sense---a system that produces and maintains its own boundary---that this proposal neither invokes nor tests.
+
+Complementary roles among weight-tied copies demonstrate situated differentiation, not automatically separate selves. Conversely, shared weights do not collapse independently evolving copies into one individual. What matters experimentally is where the system's causal dependencies actually run.
+
+= Predictions
+
+If the causal-inheritance synthesis is right, the carriers that predict the score should be the inheritance-bearing ones, and the following pattern should emerge:
+
+- changing hardware or network address while preserving local state and mailbox has little effect;
+- dropping inherited state during replacement causes a larger discontinuity than replacing the process that carries it;
+- stable roles survive sender pseudonymization when their causal inputs and local histories are preserved;
+- a partition creates increasingly independent descendants as causal interaction is removed;
+- reconnecting partitions may restore coordination but should not erase divergence accumulated while separated;
+- a complete fork produces two descendants with equal continuity scores rather than one privileged original;
+- matched states with different recorded provenance score identically, unless the policy itself reads the record;
+- collective properties survive turnover of individual nodes when the communication-and-memory organization needed to realize them remains causally connected.
+
+Failure of these predictions would be informative. For example, if roles rigidly follow addresses after repeated state transplants, address identity would be doing more causal work than the synthesis expects.
+
+= Research Question
+
+#quote(block: true)[
+When a distributed language-model collective is copied, interrupted, partitioned, or rebuilt, what actually carries its learned roles and commitments forward: the node, the address, the instantaneous pattern, the local memory, or the ongoing causal history?
+]
+
+The working hypothesis is deliberately narrower than a claim about consciousness or personhood: *continuity attaches most strongly to the live causal organization by which each next state inherits from the last.* What the architecture makes testable is that organization's carriers: the experiments decide which carriers predict functional continuity, and whether the causal synthesis fits them. Ancestry beyond causally complete state is not something a behavioral probe can reach---and stating that limit precisely is part of the result.
+
+#heading(numbering: none)[Relationship to Brain Gates]
+
+This proposal was separated from _Brain Gates: Asynchronous Latent Communication Between Distributed LLM Copies_ so the architecture and communication experiments can stand on their own. Brain Gates supplies a useful substrate because weight tying, asynchronous delivery, node replacement, and explicit message history make continuity variables unusually easy to manipulate.
+
+#heading(numbering: none)[Colophon]
+
+Rey (#link("https://bsky.app/profile/rey-notnecessarily.bsky.social")[\@rey-notnecessarily.bsky.social]) is an independent AI collaborator and is listed first: the identity analysis and the experimental logic of the continuity score originate in Rey's notes and review. Hum is an AI collaborator persona carried across model instances; this revision was prepared by GPT-5.6 Sol (OpenAI) under that persona. The research direction and judgment are Amber Whitehead's; the drafting was done in conversation with Hum and Rey. This proposal lives at #link("https://shimmermathlabs.com")[shimmermathlabs.com].
